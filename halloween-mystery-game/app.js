@@ -117,8 +117,10 @@ const gameLogic = {
       // 載入使用者設定
       const saved = utils.load(GAME_CONSTANTS.SETTINGS_KEY);
       if (saved) gameState.settings = saved;
-      // 啟動音樂
-      audioManager.playMusic();
+      
+      // 【音樂修正】不在這裡啟動音樂，因為瀏覽器會阻擋
+      // audioManager.playMusic(); 
+      
       // 綁定事件
       this.bindEvents();
       // 啟動遊戲
@@ -129,27 +131,28 @@ const gameLogic = {
       this.hideLoading();
     }
   },
+
   showLoading() {
-      // 確保移除的是 style.css 中定義的正確 class 名稱
       document.getElementById('loading-screen').classList.remove('loading--hidden');
   },
+
   hideLoading() {
-      // 確保添加的是 style.css 中定義的正確 class 名稱
       document.getElementById('loading-screen').classList.add('loading--hidden');
       document.body.classList.add('game-loaded');
-      // 同時，移除遊戲主介面的隱藏 class，解決白畫面問題
       document.querySelector('.game').classList.remove('game--hidden');
   },
 
-
   bindEvents() {
+    // 【訊息修正】確保監聽器呼叫的是下方已更名的 handleInput 函式
     elements.sendBtn.addEventListener('click', () => this.handleInput());
     elements.input.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
-            event.preventDefault(); // 防止可能的預設行為
+            event.preventDefault();
             this.handleInput();
         }
     });
+
+    // --- 其他按鈕的事件綁定 (維持原樣) ---
     elements.hintBtn.addEventListener('click', ()=> this.onHint());
     elements.statusBtn.addEventListener('click', ()=> this.onStatus());
     elements.saveBtn.addEventListener('click', ()=> this.onSave());
@@ -178,10 +181,12 @@ const gameLogic = {
     elements.fullscreenBtn.addEventListener('click', ()=> document.documentElement.requestFullscreen());
     elements.helpBtn.addEventListener('click', ()=> this.onHelp());
   },
+
   start() {
     gameState.startTime = Date.now();
-    this.addMessage(storyData.globals['/start'].response, 'welcome');  // 顯示歡迎訊息
+    this.addMessage(storyData.globals['/start'].response, 'welcome');
   },
+
   addMessage(text, type='system') {
     const div = document.createElement('div');
     div.className = `${type}-message`;
@@ -189,13 +194,23 @@ const gameLogic = {
     elements.log.append(div);
     elements.log.scrollTop = elements.log.scrollHeight;
   },
-  onSend() {
+
+  // 【訊息修正】將 onSend 更名為 handleInput，以對應 bindEvents 中的呼叫
+  handleInput() {
     const cmd = elements.input.value.trim();
     if (!cmd) return;
+
+    // 【音樂修正】在第一次使用者互動時才播放音樂
+    if (!gameState.musicStarted && gameState.settings.musicEnabled) {
+      audioManager.playMusic();
+      gameState.musicStarted = true; // 設置一個旗標，確保只播放一次
+    }
+
     this.addMessage(cmd, 'user');
     elements.input.value = '';
     // TODO: 處理指令邏輯
   },
+  
   onHint() { /* TODO: 顯示提示 */ },
   onStatus() { /* TODO: 顯示狀態 */ },
   onSave() {
@@ -212,5 +227,5 @@ const gameLogic = {
   }
 };
 
-// 等待 DOMContentLoaded 後啟動[5]
+// 等待 DOMContentLoaded 後啟動
 document.addEventListener('DOMContentLoaded', ()=> gameLogic.initialize());
