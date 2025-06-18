@@ -133,8 +133,10 @@ const gameLogic = {
     document.getElementById('loading-screen').classList.remove('loading--hidden');
   },
   hideLoading() {
-    document.getElementById('loading-screen').classList.add('loading--hidden');
-    document.body.classList.add('game-loaded');
+      document.getElementById('loading-screen').classList.add('loading--hidden');
+      document.body.classList.add('game-loaded');
+      // 【新增此行】移除遊戲主介面的隱藏 class，使其顯示出來
+      document.querySelector('.game').classList.remove('game--hidden');
   },
 
   bindEvents() {
