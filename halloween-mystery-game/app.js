@@ -130,12 +130,13 @@ const gameLogic = {
     }
   },
   showLoading() {
-    document.getElementById('loading-screen').classList.remove('hidden');
+    document.getElementById('loading-screen').classList.remove('loading--hidden');
   },
   hideLoading() {
-    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('loading-screen').classList.add('loading--hidden');
     document.body.classList.add('game-loaded');
   },
+
   bindEvents() {
     elements.sendBtn.addEventListener('click', ()=> this.onSend());  // 綁定送出按鈕[2]
     elements.input.addEventListener('keypress', e=> { if (e.key==='Enter') this.onSend(); });
