@@ -1,527 +1,442 @@
-// ===== app.js (修正版) =====
-
-(() => {
-  // 遊戲狀態管理
-  let gameState = {
-    level: 0,
-    flags: [],
-    hintCount: 0,
-    score: 0,
-    wrongAttempts: 0,
-    startTime: null,
-    achievements: [],
-    isGameCompleted: false,
-    currentEnding: null,
-    settings: {
-      soundEnabled: true,
-      musicEnabled: true,
-      volume: 70,
-      difficulty: 'normal'
+{
+  "game_config": {
+    "title": "萬聖夜驚變：化裝舞會謎案",
+    "version": "2.0",
+    "max_hints": 3,
+    "save_system": true,
+    "difficulty_scaling": true,
+    "language": "zh-TW",
+    "theme": "halloween_mystery"
+  },
+  "player_state": {
+    "current_level": 1,
+    "collected_flags": [],
+    "hint_count": 0,
+    "investigation_score": 0,
+    "time_spent": 0,
+    "wrong_attempts": 0,
+    "achievements_unlocked": [],
+    "difficulty": "normal"
+  },
+  "globals": {
+    "/start": {
+      "response": "🎭【萬聖夜驚變：化裝舞會謎案】\n\n雷聲炸響！古老莊園瞬間陷入漆黑，狂歡笑聲化作死寂。\n你摸到散落一地的羊皮紙，泛黃名單上血跡暈染開來...\n\n💀「當心那些不該出現的面孔」——匿名警告信在袖口閃現\n\n🔍 遊戲提示：\n• 輸入文字進行調查\n• 使用 `/hint` 獲取提示\n• 使用 `/status` 查看狀態\n• 仔細觀察每個細節\n\n（輸入任意文字開始調查大廳）",
+      "action": "reset_game_state",
+      "sound_effect": "thunder_crash"
+    },
+    "/hint": {
+      "response_template": "💡 提示 {{hint_number}}/{{max_hints}}：\n{{current_level_hint}}\n\n剩餘提示：{{remaining_hints}}",
+      "condition": "hint_count < max_hints",
+      "action": "increment_hint_count"
+    },
+    "/status": {
+      "response": "📊 當前狀態\n━━━━━━━━━━━━━━\n🏠 位置： {{level_name}}\n🔍 收集線索： {{flags_display}}\n💡 剩餘提示： {{remaining_hints}}/{{max_hints}}\n⏱️ 調查時間： {{time_elapsed}}\n🎯 推理準確度： {{accuracy_percentage}}%"
+    },
+    "/save": {
+      "response": "💾 遊戲進度已保存！",
+      "action": "save_game_state"
+    },
+    "/load": {
+      "response": "📂 遊戲進度已載入！",
+      "action": "load_game_state"
+    },
+    "/reset": {
+      "response": "🔄 遊戲已重置，準備開始新的調查...",
+      "action": "reset_game_state"
     }
-  };
-
-  let storyData = null;
-  let isGameLoaded = false;
-  let currentAudio = null;
-
-  // 常量定義
-  const GAME_CONSTANTS = {
-    MAX_HINTS: 3,
-    MAX_LEVELS: 7,
-    SAVE_KEY: 'halloween_save',
-    SETTINGS_KEY: 'halloween_settings',
-    CLUE_NAMES: {
-      'A': '但丁密文',
-      'B': '黏土腳印樣本', 
-      'C': '夜行者披風',
-      'D': '血漬地圖'
-    }
-  };
-
-  // DOM 元素引用
-  const elements = {
-    log: document.getElementById('log'),
-    input: document.getElementById('input'),
-    sendBtn: document.getElementById('send'),
-    currentLocation: document.getElementById('current-location'),
-    cluesCount: document.getElementById('clues-count'),
-    hintsRemaining: document.getElementById('hints-remaining'),
-    scoreDisplay: document.getElementById('score-display'),
-    hintBtn: document.getElementById('hint-btn'),
-    statusBtn: document.getElementById('status-btn'),
-    saveBtn: document.getElementById('save-btn'),
-    loadBtn: document.getElementById('load-btn'),
-    cluesList: document.getElementById('clues-list'),
-    progressFill: document.getElementById('progress-fill'),
-    progressCurrent: document.getElementById('progress-current'),
-    progressTotal: document.getElementById('progress-total'),
-    settingsPanel: document.getElementById('settings-panel'),
-    settingsBtn: document.getElementById('settings-btn'),
-    closeSettings: document.getElementById('close-settings'),
-    soundToggle: document.getElementById('sound-toggle'),
-    musicToggle: document.getElementById('music-toggle'),
-    volumeSlider: document.getElementById('volume-slider'),
-    volumeValue: document.getElementById('volume-value'),
-    difficultySelect: document.getElementById('difficulty-select'),
-    resetGame: document.getElementById('reset-game'),
-    inputSuggestions: document.getElementById('input-suggestions'),
-    fullscreenBtn: document.getElementById('fullscreen-btn'),
-    helpBtn: document.getElementById('help-btn'),
-    thunderSound: document.getElementById('thunder-sound'),
-    ambientSound: document.getElementById('ambient-sound'),
-    successSound: document.getElementById('success-sound'),
-    errorSound: document.getElementById('error-sound')
-  };
-
-  // 工具函數
-  const utils = {
-    formatText(text, variables = {}) {
-      if (!text) return '';
-      return text.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-        return variables[key] !== undefined ? variables[key] : match;
-      });
-    },
-
-    saveToStorage(key, data) {
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-        return true;
-      } catch (error) {
-        console.error(`存儲失敗 [${key}]:`, error);
-        return false;
-      }
-    },
-
-    loadFromStorage(key) {
-      try {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-      } catch (error) {
-        console.error(`讀取失敗 [${key}]:`, error);
-        return null;
-      }
-    },
-
-    formatTime(seconds) {
-      if (!seconds || seconds < 0) return '0:00';
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    },
-
-    calculateAccuracy() {
-      const totalAttempts = gameState.wrongAttempts + this.getCurrentLevel();
-      if (totalAttempts === 0) return 100;
-      const correctAttempts = this.getCurrentLevel();
-      return Math.round((correctAttempts / totalAttempts) * 100);
-    },
-
-    getCurrentLevel() {
-      return Math.max(0, gameState.level);
-    },
-
-    checkRequiredFlags(requiredFlags) {
-      if (!requiredFlags || !Array.isArray(requiredFlags)) return true;
-      return requiredFlags.every(flag => gameState.flags.includes(flag));
-    }
-  };
-
-  // 音效系統
-  const audioManager = {
-    play(soundId, volume = null) {
-      if (!gameState.settings.soundEnabled) return;
-      
-      const audioElement = elements[soundId + 'Sound'];
-      if (!audioElement) return;
-      
-      try {
-        const targetVolume = (volume !== null ? volume : gameState.settings.volume) / 100;
-        audioElement.volume = Math.max(0, Math.min(1, targetVolume));
-        audioElement.currentTime = 0;
-        audioElement.play().catch(error => {
-          console.warn(`音效播放失敗 [${soundId}]:`, error);
-        });
-      } catch (error) {
-        console.warn(`音效設定失敗 [${soundId}]:`, error);
-      }
-    },
-
-    playMusic(loop = true) {
-      if (!gameState.settings.musicEnabled) return;
-      
-      this.stopMusic();
-      
-      const musicElement = elements.ambientSound;
-      if (!musicElement) return;
-      
-      try {
-        currentAudio = musicElement;
-        currentAudio.loop = loop;
-        currentAudio.volume = gameState.settings.volume / 100 * 0.3;
-        currentAudio.play().catch(error => {
-          console.warn('背景音樂播放失敗:', error);
-        });
-      } catch (error) {
-        console.warn('背景音樂設定失敗:', error);
-      }
-    },
-
-    stopMusic() {
-      if (currentAudio) {
-        try {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-          currentAudio = null;
-        } catch (error) {
-          console.warn('停止背景音樂失敗:', error);
+  },
+  "levels": [
+    {
+      "id": 1,
+      "name": "大廳的邀請函謎團",
+      "description": "破解冒名頂替者的身份",
+      "prompt": "🏛️ 【碎裂烏鴉雕像與三張邀請函】\n\n你踢到硬物——竟是裂開的渡鴉木雕！腹中塞著：\n\n📜 燙金邀請函三張：\n• Charles Whitmore（貴族印章）\n• Victoria Sterling（夫人花押） \n• Edward Lancaster（商人徽記）\n\n📋 賓客名單： Victoria名字被血指印反覆摩擦\n🗺️ 半張焦黑座位圖\n\n🩸 名單背面潦草字跡：「他喝了不該喝的酒...男性聲音在女廁所外徘徊」\n\n🔍 可調查項目：\n• 「檢查雕像」- 深入調查渡鴉雕像\n• 「分析邀請函」- 比對筆跡和印章\n\n❓ 請輸入冒名頂替者的全名：",
+      "hints": [
+        "注意名單背面的線索：「他」和「男性聲音」暗示性別",
+        "Victoria的名字被反覆摩擦，可能是想要掩蓋什麼",
+        "三個名字中只有一個是男性，但出現在不該出現的地方"
+      ],
+      "answers": [
+        {
+          "type": "main",
+          "values": ["Charles", "Charles Whitmore"],
+          "response": "✅ 推理正確！\n\n🕯️ 蠟燭驟亮！「Charles」的邀請函瞬間化作灰燼...\n你意識到Charles冒用了Victoria的身份參加舞會！\n\n📖 推理解析：\n名單背面提到「他」和「男性聲音」，但Victoria是女性名字。Charles必定是冒名頂替者！\n\n🚪 書房木門吱呀開啟，寒意鑽入骨髓...\n\n調查分數 +100",
+          "next_level": 2,
+          "score_bonus": 100
         }
-      }
+      ],
+      "branches": [
+        {
+          "trigger": ["檢查雕像", "調查雕像"],
+          "flag": "A",
+          "response": "🎁 發現隱藏線索！\n\n你從鴉喙摳出蠟丸！破開後浮現古老文字：\n「書房密碼藏在第九層地獄的詩句裡...PUMPKIN字母排列有玄機」\n\n🔮 獲得線索A：但丁密文\n這將在書房關卡中發揮重要作用！\n\n調查分數 +50",
+          "score_bonus": 50
+        },
+        {
+          "trigger": ["分析邀請函", "檢查邀請函"],
+          "response": "🔍 邀請函分析：\n\n• Charles的邀請函墨水較新，紙質不同\n• Victoria的邀請函有撕痕，似乎被人搶奪\n• Edward的邀請函完好無損\n\n這進一步證實了你的推理方向！"
+        }
+      ],
+      "wrong_responses": [
+        {
+          "values": ["Victoria", "Victoria Sterling"],
+          "response": "❌ 推理錯誤\n\nVictoria是受害者，她的名字被血指印摩擦是因為有人想要掩蓋真相。\n重新思考：誰會在女廁所外徘徊？\n\n錯誤次數 +1"
+        },
+        {
+          "values": ["Edward", "Edward Lancaster"],
+          "response": "❌ 推理錯誤\n\nEdward的邀請函完好無損，沒有可疑跡象。\n注意名單背面的性別線索！\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 請輸入完整的人名，或使用 `/hint` 獲取提示。仔細觀察邀請函和名單上的線索！"
     },
-
-    setVolume(volume) {
-      gameState.settings.volume = Math.max(0, Math.min(100, volume));
-      if (currentAudio) {
-        currentAudio.volume = gameState.settings.volume / 100 * 0.3;
-      }
+    {
+      "id": 2,
+      "name": "書房的密碼謎題",
+      "description": "破解PUMPKIN密碼鎖",
+      "prompt": "📚 【血色月光下的密碼鎖】\n\n書架暗門刻著六位密碼盤，PUMPKIN字母在月光下泛著幽光：\n\n📖 線索收集：\n• 《神曲》地獄篇書脊有731頁摺角\n• 桌上苦艾酒杯底黏著南瓜籽（5顆）\n• 書桌抽屜有數字「26」的刻痕\n\n🔤 PUMPKIN字母對應：\nP=16, U=21, M=13, P=16, K=11, I=9, N=14\n\n🔑 若持有線索A： 書架陰影處浮現神秘泥腳印...\n牆縫刻痕顯示：4-9-5-3-7\n\n🎯 輸入六位數字密碼，或選擇其他調查方向：",
+      "hints": [
+        "將《神曲》頁數、南瓜籽數量、抽屜刻痕按順序組合",
+        "731 + 5 + 26 = 731526",
+        "如果有線索A，注意牆縫的五位數字可能是另一條路線"
+      ],
+      "answers": [
+        {
+          "type": "main",
+          "values": ["731526"],
+          "response": "✅ 密碼正確！\n\n⚙️ 齒輪轉動聲響起！暗門緩緩滑開，飄出淡淡的肉豆蔻香氣...\n\n📖 解密說明：\n731（神曲頁數）+ 5（南瓜籽）+ 26（抽屜刻痕）= 731526\n\n🚪 通往餐廳的秘密通道已開啟！\n\n調查分數 +150",
+          "next_level": 3,
+          "score_bonus": 150
+        },
+        {
+          "type": "hidden",
+          "values": ["49537"],
+          "requires_flags": ["A"],
+          "response": "🔓 發現隱藏路線！\n\n你輸入牆縫刻痕數字——整面書架突然翻轉！\n霉味暗道深不見底，石階向下延伸...\n\n🦶 獲得線索B：黏土腳印樣本\n腳印尺寸：44碼軍靴，泥土成分含有花園特有的腐葉土\n\n🛤️ 選擇路線：\n• 輸入「跳過」回到主線餐廳\n• 輸入「進入暗道」探索隱藏劇情\n\n調查分數 +200",
+          "flag": "B",
+          "score_bonus": 200
+        }
+      ],
+      "branches": [
+        {
+          "trigger": ["進入暗道", "探索暗道"],
+          "requires_flags": ["B"],
+          "response": "🕳️ 暗道探索\n\n你沿著石階下行，發現地下密室...\n牆上掛著莊園歷代主人的肖像，其中一幅被黑布遮蓋\n\n🖼️ 掀開黑布，露出當代主人的畫像——但畫中人的臉被刮花了！\n旁邊刻著：「真相藏在鏡子的另一面」\n\n這個發現將在最終關卡發揮關鍵作用！"
+        }
+      ],
+      "wrong_responses": [
+        {
+          "pattern": "^\\d{6}$",
+          "response": "❌ 密碼錯誤\n\n密碼盤發出刺耳聲響，數字重新排列。\n重新檢查書房中的數字線索，按邏輯順序組合！\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 請輸入六位數字密碼，或使用 `/hint` 獲取提示。"
+    },
+    {
+      "id": 3,
+      "name": "餐廳的失蹤謎案",
+      "description": "找出偷走寶石餐刀的真兇",
+      "prompt": "🍽️ 【長桌的銀器詛咒】\n\n燭光搖曳中，主位的寶石餐刀不翼而飛！\n\n🔍 現場證據：\n• 服務生圍裙沾滿紫色酒漬（波爾多紅酒）\n• 神秘賓客座位下散落銀色鱗片\n• 艾莉的餐巾被利器割裂，邊緣有血跡\n• 冰桶中有可疑的金屬反光\n\n👥 在場人員：\n• 服務生：負責上酒，行動頻繁\n• 神秘賓客：全程戴面具，身份不明\n• 艾莉：主人的未婚妻，神色慌張\n\n💎 壁爐餘燼突然爆出火星！\n\n🔍 可調查項目：\n• 「檢查壁爐」- 調查火星異常\n• 「檢查冰桶」- 查看金屬反光\n• 「分析鱗片」- 需要線索B\n\n❓ 請指出偷刀的真兇：",
+      "hints": [
+        "注意服務生的行動範圍和接觸機會",
+        "紫色酒漬說明服務生在案發時間內活動頻繁",
+        "冰桶中的金屬反光可能就是失蹤的餐刀"
+      ],
+      "answers": [
+        {
+          "type": "main",
+          "values": ["服務生"],
+          "response": "✅ 推理正確！\n\n🔪 餐刀從冰桶中浮出！服務生利用上酒的機會偷走了餐刀！\n\n📖 推理解析：\n• 服務生有接觸餐具的機會\n• 紫色酒漬證明他在案發時間活動\n• 冰桶是完美的藏匿地點\n\n🚪 後廚通道的鐵門緩緩開啟...\n\n調查分數 +150",
+          "next_level": 4,
+          "score_bonus": 150
+        },
+        {
+          "type": "hidden",
+          "values": ["神秘賓客"],
+          "requires_flags": ["B"],
+          "response": "🔍 發現隱藏真相！\n\n你舉起鱗片對準月光——鱗片發出異樣光芒！\n壁爐磚牆突然彈開暗格，夜行披風悄然落下...\n\n🦇 獲得線索C：夜行者披風\n披風內側縫著標籤：「專屬於莊園主人」\n\n🎭 真相揭露：\n神秘賓客就是易容的莊園主人！他在自導自演這場戲！\n\n🛤️ 選擇：\n• 輸入「繼續」進入第四關\n• 輸入「返回餐廳」重新調查\n\n調查分數 +250",
+          "flag": "C",
+          "score_bonus": 250
+        }
+      ],
+      "branches": [
+        {
+          "trigger": ["檢查壁爐", "調查壁爐"],
+          "response": "🔥 壁爐調查\n\n餘燼中發現燒焦的布料碎片，材質昂貴...\n這不是普通服務生能負擔的衣料！\n\n🧵 布料邊緣有金線刺繡，似乎是某種徽記的一部分。"
+        },
+        {
+          "trigger": ["檢查冰桶", "調查冰桶"],
+          "response": "🧊 冰桶調查\n\n冰塊下確實藏著寶石餐刀！\n刀柄上還沾著新鮮的指紋...\n\n🔍 指紋大小和形狀符合成年男性特徵。"
+        },
+        {
+          "trigger": ["分析鱗片", "檢查鱗片"],
+          "requires_flags": ["B"],
+          "response": "✨ 鱗片分析\n\n這些「鱗片」實際上是特殊化妝品的碎片！\n用於改變膚色和質感，是專業易容師才會使用的道具！\n\n🎭 這意味著神秘賓客在隱藏真實身份..."
+        }
+      ],
+      "wrong_responses": [
+        {
+          "values": ["艾莉"],
+          "response": "❌ 推理錯誤\n\n艾莉的餐巾被割裂說明她是受害者，不是加害者。\n重新觀察誰有機會接觸餐具！\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 請重新分析現場證據，注意誰有機會和動機偷走餐刀。使用 `/hint` 獲取提示。"
+    },
+    {
+      "id": 4,
+      "name": "地下室監控謎題",
+      "description": "分析監視器畫面找出時間線",
+      "prompt": "📺 【閃爍的監視畫面】\n\n雪花螢幕播放著關鍵時刻的三段影像：\n\n🎬 監控記錄：\n• 21:15 - 禮帽人影掠過酒櫃（身高約180cm）\n• 21:45 - 水晶燈無故劇烈搖晃（無人觸碰）\n• 22:00 - 服務生倒退著進入鏡頭（神色慌張）\n\n⚠️ 異常發現：\n螢幕邊緣有新月狀反光，似乎是隱藏攝像頭的鏡面...\n\n🎭 若持有線索C（夜行者披風）：\n可以操作鏡面系統，查看被刪除的影像片段！\n\n🔍 可調查項目：\n• 「操作鏡面」- 需要線索C\n• 「分析時間線」- 按邏輯順序排列事件\n\n❓ 請按正確時間順序輸入事件（格式：時間→時間→時間）：",
+      "hints": [
+        "按時間先後順序：最早的事件→中間事件→最晚事件",
+        "21:15是最早的，22:00是最晚的",
+        "正確格式：21:15→21:45→22:00"
+      ],
+      "answers": [
+        {
+          "type": "main",
+          "values": ["21:15→21:45→22:00", "21:15->21:45->22:00"],
+          "response": "✅ 時間線分析正確！\n\n⚙️ 暗門機關啟動！腐敗花香從隱藏通道湧入鼻腔...\n\n📖 事件重構：\n1. 21:15 - 禮帽人（主謀）開始行動\n2. 21:45 - 水晶燈搖晃（製造混亂）\n3. 22:00 - 服務生慌張逃離（計劃敗露）\n\n🌹 通往花園的秘密通道已開啟！\n\n調查分數 +150",
+          "next_level": 5,
+          "score_bonus": 150
+        },
+        {
+          "type": "hidden",
+          "values": ["MOON", "moon", "新月"],
+          "requires_flags": ["C"],
+          "response": "🌙 隱藏影像解鎖！\n\n鏡面系統啟動，映出被刪除的關鍵片段：\n\n🎬 20:30 - 主人持燭台走向花園...\n但詭異的是，同一時間餐廳裡也出現了「主人」的身影！\n\n🎭 真相浮現：\n有人在冒充主人！這是一場精心策劃的替身計劃！\n\n🗺️ 獲得線索D：血漬地圖\n地圖標示出花園中的異常血跡分布\n\n調查分數 +200",
+          "flag": "D",
+          "score_bonus": 200
+        }
+      ],
+      "branches": [
+        {
+          "trigger": ["操作鏡面", "檢查鏡面"],
+          "requires_flags": ["C"],
+          "response": "🔮 鏡面系統啟動\n\n夜行者披風的特殊材質激活了隱藏的鏡面系統！\n螢幕開始播放更多被隱藏的畫面...\n\n輸入「MOON」來解鎖完整的隱藏影像！"
+        }
+      ],
+      "wrong_responses": [
+        {
+          "pattern": "\\d{2}:\\d{2}",
+          "response": "❌ 時間順序錯誤\n\n請按照事件發生的先後順序排列。\n格式：最早時間→中間時間→最晚時間\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 請按正確格式輸入時間順序，或使用 `/hint` 獲取提示。"
+    },
+    {
+      "id": 5,
+      "name": "花園的鞋印分析",
+      "description": "通過鞋印找出行蹤矛盾者",
+      "prompt": "🌙 【月光下的雙重鞋印】\n\n南瓜燈群投出詭異陰影，地面留下多組腳印：\n\n👠 鞋印分析：\n• 玫瑰叢旁： 38碼尖頭靴印（鬼臉面具者聲稱的尺寸）\n• 噴泉邊： 繡「E.L」手帕（艾莉的縮寫？）\n• 橡樹下： 35碼高跟鞋印（艾莉聲稱的尺寸）\n\n🎭 角色資料對比：\n• 鬼臉面具者：聲稱穿38碼靴子\n• 艾莉：聲稱穿35碼高跟鞋\n\n👞 若持有線索D（血漬地圖）：\n樹根處浮現44碼軍靴印！血跡地圖顯示這裡曾發生激烈爭鬥！\n\n🔍 可調查項目：\n• 「測量軍靴印」- 需要線索D\n• 「對比鞋印尺寸」- 找出矛盾\n\n❓ 請指出行蹤與證詞矛盾的人：",
+      "hints": [
+        "比較每個人聲稱的鞋碼和實際發現的鞋印",
+        "注意誰的鞋印出現在不該出現的地方",
+        "鬼臉面具者的鞋印尺寸有問題"
+      ],
+      "answers": [
+        {
+          "type": "main",
+          "values": ["鬼臉面具者"],
+          "response": "✅ 推理正確！\n\n🎭 鬼臉面具者聲稱穿38碼靴子，但玫瑰叢的腳印明顯偏小！\n他在撒謊掩蓋真實身份！\n\n🍂 楓樹後的暗門緩緩開啟，石階通向主人寢室...\n\n📖 矛盾分析：\n實際腳印與聲稱尺寸不符，說明此人在隱瞞身份！\n\n調查分數 +150",
+          "next_level": 6,
+          "score_bonus": 150
+        }
+      ],
+      "branches": [
+        {
+          "trigger": ["測量軍靴印", "檢查軍靴印"],
+          "requires_flags": ["D"],
+          "response": "🔍 軍靴印深度分析\n\n44碼軍靴印深陷土中，說明穿著者體重較重...\n在最深的腳印處，你挖出一枚金懷錶！\n\n⌚ 懷錶發現：\n錶蓋內刻著：「給我的摯愛 艾莉 - 永遠的主人」\n\n💍 重要線索：\n這是主人送給艾莉的定情信物！出現在這裡說明...\n主人曾在此地與某人發生衝突！\n\n🔮 線索D升級為完整證據\n\n調查分數 +100",
+          "score_bonus": 100
+        },
+        {
+          "trigger": ["對比鞋印尺寸", "分析鞋印"],
+          "response": "📏 鞋印尺寸對比\n\n• 鬼臉面具者聲稱：38碼 ❌ 實際發現：約35碼\n• 艾莉聲稱：35碼 ✅ 實際發現：35碼\n\n🎭 鬼臉面具者的證詞有明顯矛盾！"
+        }
+      ],
+      "wrong_responses": [
+        {
+          "values": ["艾莉"],
+          "response": "❌ 推理錯誤\n\n艾莉的鞋印尺寸與聲稱一致，沒有矛盾。\n重新檢查其他人的證詞和實際證據！\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 請重新比對鞋印與角色證詞，找出矛盾之處。使用 `/hint` 獲取提示。"
+    },
+    {
+      "id": 6,
+      "name": "主人房間的最終推理",
+      "description": "揭開真正的幕後黑手",
+      "prompt": "🏰 【撕碎的日記與拼圖】\n\n主人寢室凌亂不堪，書桌散落著撕碎的日記頁：\n\n📔 日記片段：\n• 「有人在調換我的藥...我感到虛弱」\n• 「艾莉袖口的銀光令我恐懼...那不是普通首飾」\n• 「鏡中的我越來越陌生...」\n\n🧩 未完成拼圖：\n缺了右下角的關鍵部分，隱約能看出是莊園的全景圖\n\n🖼️ 若持有全部線索（A、B、C、D）：\n牆上肖像畫的眼睛開始流出血淚！\n畫框後傳來機械轉動聲...\n\n🔍 可調查項目：\n• 「檢查肖像畫」- 需要全部線索\n• 「完成拼圖」- 分析日記線索\n\n❓ 根據所有證據，真正的幕後黑手是誰？",
+      "hints": [
+        "注意日記中「鏡中的我」這個關鍵線索",
+        "艾莉只是被懷疑的對象，真相更加複雜",
+        "如果收集了所有線索，答案可能出人意料"
+      ],
+      "answers": [
+        {
+          "type": "main",
+          "values": ["艾莉"],
+          "response": "✅ 基礎推理正確！\n\n🧩 拼圖完成！顯現出莊園全景，艾莉的房間被紅圈標記...\n\n📖 推理解析：\n• 艾莉接近主人是為了下毒\n• 銀光是毒藥容器的反光\n• 她策劃了整場陰謀\n\n🌹 最終謎題的大門已開啟！\n\n調查分數 +150",
+          "next_level": 7,
+          "score_bonus": 150
+        },
+        {
+          "type": "ultimate",
+          "values": ["主人自己", "主人", "莊園主人"],
+          "requires_flags": ["A","B","C","D"],
+          "response": "🎭 終極真相揭露！\n\n你將懷錶嵌入拼圖的缺失部分——\n整幅畫像突然裂開，露出隱藏的雙面鏡！\n\n🪞 鏡中真相：\n鏡子映出主人的易容過程...他一直在扮演多個角色！\n\n🎪 驚人發現：\n• 主人患有多重人格障礙\n• 他同時扮演了神秘賓客、鬼臉面具者\n• 整場謀殺案是他潛意識的自我毀滅\n\n💀 精神分裂的真相：\n「鏡中的我越來越陌生」不是比喻，而是字面意思！\n\n🏆 完美推理獎勵 +500分\n你發現了遊戲的最深層真相！\n\n調查分數 +500",
+          "score_bonus": 500,
+          "achievement": "真相大師"
+        }
+      ],
+      "branches": [
+        {
+          "trigger": ["檢查肖像畫", "調查肖像畫"],
+          "requires_flags": ["A","B","C","D"],
+          "response": "🖼️ 肖像畫的秘密\n\n四條線索的力量激活了畫像的隱藏機關！\n血淚滴落的位置形成了一個圖案...\n\n🔮 神秘圖案：\n血淚連線形成了「雙面」的符號！\n這暗示著主人的雙重身份...\n\n輸入「主人自己」來揭露最終真相！"
+        }
+      ],
+      "wrong_responses": [
+        {
+          "values": ["服務生", "神秘賓客"],
+          "response": "❌ 推理不夠深入\n\n這些只是表面現象，真正的幕後黑手隱藏更深。\n重新審視日記中的心理線索！\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 推理未完整，請再檢查日記與拼圖線索。如果收集了所有線索，嘗試更深層的推理！"
+    },
+    {
+      "id": 7,
+      "name": "終極謎題：南瓜門",
+      "description": "解開最終的字母謎題",
+      "prompt": "🎃 【染血南瓜拼圖門】\n\n古老大門由七片南瓜碎塊組成，每片都刻著血紅字母：\n\n🔤 字母碎片： H-A-L-L-O-W-E-E-N\n\n👻 寒風中傳來幽靈低語：\n「說出真正的祭品之名...只有真相才能打開逃生之門」\n\n🎭 根據你的發現程度，有不同的解答路線：\n\n🔍 可能的答案方向：\n• 萬聖節主題詞彙\n• 與幽靈相關的詞彙 \n• 化裝舞會相關詞彙\n• 需要特定線索的隱藏詞彙\n\n⚠️ 警告： 錯誤的答案可能導致不同的結局！\n\n❓ 請輸入七個字母組成的單詞：",
+      "hints": [
+        "重新排列 H-A-L-L-O-W-E-E-N 這些字母",
+        "最明顯的答案是 HALLOWEEN",
+        "如果有特殊線索，可能有其他隱藏答案"
+      ],
+      "answers": [
+        {
+          "type": "ending_A",
+          "values": ["HALLOWEEN"],
+          "response": "🔥 【結局A：烈火吞噬莊園】\n\n南瓜門轟然開啟！但你的答案觸發了古老詛咒...\n\n🏰 莊園瞬間被地獄之火吞噬，所有的秘密都化為灰燼\n你雖然逃脫，但真相永遠埋葬在火海中...\n\n📊 結局評價： 普通結局\n最終得分： {{total_score}}\n調查準確度： {{accuracy}}%\n\n🎭 提示： 收集更多線索可能會有不同的結局！",
+          "ending": "fire_ending"
+        },
+        {
+          "type": "ending_B",
+          "values": ["PHANTOM"],
+          "requires_flags": ["C"],
+          "response": "👻 【結局B：幽靈附身永困宅邸】\n\n你說出了「PHANTOM」，夜行者披風突然纏繞住你！\n\n🎭 原來披風是幽靈的載體，你成為了新的宿主...\n從此永遠困在莊園中，成為下一個化裝舞會的主辦者\n\n📊 結局評價： 神秘結局 \n最終得分： {{total_score}} + 200\n調查準確度： {{accuracy}}%\n\n🔮 特殊成就： 幽靈獵人",
+          "ending": "phantom_ending",
+          "score_bonus": 200
+        },
+        {
+          "type": "ending_C",
+          "values": ["MASQUER", "MASQUE"],
+          "requires_flags": ["A","B","C"],
+          "response": "🎭 【結局C：化裝舞會的真相】\n\n「MASQUERADE」的力量激活！所有NPC摘下面具...\n\n🎪 震撼真相：\n• 艾莉露出主人的臉\n• 服務生露出艾莉的臉 \n• 神秘賓客露出服務生的臉\n\n🔄 這是一場身份輪迴的遊戲！每個人都在扮演別人！\n\n📊 結局評價： 真相結局\n最終得分： {{total_score}} + 300\n調查準確度： {{accuracy}}%\n\n🏆 特殊成就： 真相揭露者",
+          "ending": "truth_ending",
+          "score_bonus": 300
+        },
+        {
+          "type": "ending_S",
+          "values": ["NOWHERE"],
+          "requires_flags": ["A","B","C","D"],
+          "response": "🌟 【結局S：輪迴的邀請】\n\n你重新排列字母得到「NOWHERE」——無處可逃！\n\n💫 終極真相：\n整個莊園、所有角色、包括你自己...都是主人分裂人格的投影！\n這場遊戲是他內心世界的具現化！\n\n🎭 披風燃成灰燼！拼圖重組為真正的答案：MASQUERADE\n\n🚪 大門敞開，但外面等待的是...\n清晨時分，門縫又塞進新的羊皮紙：\n「艾莉小姐誠邀您參加『真相化裝舞會』」\n\n🔄 輪迴開始： 遊戲重新開始，但你保留了所有記憶...\n\n📊 結局評價： 完美結局\n最終得分： {{total_score}} + 1000\n調查準確度： {{accuracy}}%\n\n🏆 終極成就： 輪迴破解者\n附贈玩家數據： 最常陷入的推理盲點分析",
+          "ending": "perfect_ending",
+          "score_bonus": 1000,
+          "unlock_new_game_plus": true
+        }
+      ],
+      "wrong_responses": [
+        {
+          "pattern": "^[A-Z]{7,9}$",
+          "response": "❌ 字母組合錯誤\n\n南瓜門發出不祥的嗡鳴聲...\n重新思考這些字母的排列組合！\n\n剩餘嘗試次數： {{remaining_attempts}}\n\n錯誤次數 +1"
+        }
+      ],
+      "default_wrong": "❌ 請輸入由給定字母組成的單詞，或使用 `/hint` 獲取提示。"
     }
-  };
-
-  // UI 更新函數
-  const ui = {
-    updateStatus() {
-      const currentLevel = utils.getCurrentLevel();
-      const levelData = this.getCurrentLevelData();
-      
-      if (elements.currentLocation) {
-        elements.currentLocation.textContent = levelData?.name || '準備開始';
-      }
-      if (elements.cluesCount) {
-        elements.cluesCount.textContent = `線索: ${gameState.flags.length}/4`;
-      }
-      
-      const maxHints = GAME_CONSTANTS.MAX_HINTS;
-      const remainingHints = Math.max(0, maxHints - gameState.hintCount);
-      if (elements.hintsRemaining) {
-        elements.hintsRemaining.textContent = `提示: ${remainingHints}/${maxHints}`;
-      }
-      if (elements.scoreDisplay) {
-        elements.scoreDisplay.textContent = `分數: ${gameState.score}`;
-      }
-      
-      this.updateProgressBar(currentLevel);
-      this.updateButtonStates(remainingHints);
+  ],
+  "endings": {
+    "fire_ending": {
+      "title": "烈火吞噬",
+      "description": "普通結局：真相被火焰掩埋",
+      "replay_bonus": 50
     },
-
-    updateProgressBar(currentLevel) {
-      if (!elements.progressFill) return;
-      
-      const totalLevels = GAME_CONSTANTS.MAX_LEVELS;
-      const progress = Math.min(100, (currentLevel / totalLevels) * 100);
-      
-      elements.progressFill.style.width = `${progress}%`;
-      if (elements.progressCurrent) {
-        elements.progressCurrent.textContent = currentLevel;
-      }
-      if (elements.progressTotal) {
-        elements.progressTotal.textContent = totalLevels;
-      }
+    "phantom_ending": {
+      "title": "幽靈附身",
+      "description": "神秘結局：成為莊園的新主人",
+      "replay_bonus": 100
     },
-
-    updateButtonStates(remainingHints) {
-      if (elements.hintBtn) {
-        elements.hintBtn.disabled = remainingHints <= 0;
-      }
+    "truth_ending": {
+      "title": "化裝真相",
+      "description": "真相結局：揭露身份輪迴",
+      "replay_bonus": 150
     },
-
-    getCurrentLevelData() {
-      return storyData?.levels?.find(l => l.id === gameState.level);
-    },
-
-    updateCluesList() {
-      if (!elements.cluesList) return;
-      
-      if (gameState.flags.length === 0) {
-        elements.cluesList.innerHTML = '<div class="no-clues">尚未發現線索...</div>';
-        return;
-      }
-      
-      const clueItems = gameState.flags.map(flag => {
-        const clueName = GAME_CONSTANTS.CLUE_NAMES[flag] || '未知線索';
-        return `
-          <div class="clue-item">
-            <span class="clue-icon">🔍</span>
-            <span class="clue-name">線索${flag}: ${clueName}</span>
-          </div>
-        `;
-      }).join('');
-      
-      elements.cluesList.innerHTML = clueItems;
+    "perfect_ending": {
+      "title": "輪迴破解",
+      "description": "完美結局：打破無限循環",
+      "replay_bonus": 200,
+      "unlock_content": "新遊戲+ 模式"
     }
-  };
-
-  // 日誌函數
-  function appendToLog(text, className = '') {
-    if (!elements.log || !text) return;
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `log-message ${className}`;
-    messageDiv.innerHTML = text;
-    elements.log.appendChild(messageDiv);
-    
-    elements.log.scrollTop = elements.log.scrollHeight;
-    
-    // 限制日誌條目數量
-    while (elements.log.children.length > 100) {
-      elements.log.removeChild(elements.log.firstChild);
+  },
+  "achievements": [
+    {
+      "id": "first_clue",
+      "name": "初探真相",
+      "description": "獲得第一個隱藏線索",
+      "condition": "flags_count >= 1"
+    },
+    {
+      "id": "detective",
+      "name": "名偵探",
+      "description": "不使用提示完成遊戲",
+      "condition": "hint_count == 0 && game_completed"
+    },
+    {
+      "id": "perfectionist",
+      "name": "完美主義者",
+      "description": "收集所有線索並達成完美結局",
+      "condition": "flags_count == 4 && ending == 'perfect_ending'"
+    },
+    {
+      "id": "ghost_hunter",
+      "name": "幽靈獵人",
+      "description": "達成幽靈附身結局",
+      "condition": "ending == 'phantom_ending'"
+    },
+    {
+      "id": "truth_master",
+      "name": "真相大師",
+      "description": "發現主人的多重人格真相",
+      "condition": "ultimate_truth_discovered"
+    }
+  ],
+  "ui_enhancements": {
+    "progress_bar": true,
+    "character_portraits": true,
+    "background_music": true,
+    "sound_effects": true,
+    "save_system": true,
+    "hint_system": true,
+    "achievement_system": true,
+    "difficulty_scaling": true,
+    "multiple_endings": true
+  },
+  "difficulty_settings": {
+    "easy": {
+      "max_hints": 5,
+      "wrong_attempt_penalty": 0.5,
+      "time_bonus_multiplier": 1.2
+    },
+    "normal": {
+      "max_hints": 3,
+      "wrong_attempt_penalty": 1.0,
+      "time_bonus_multiplier": 1.0
+    },
+    "hard": {
+      "max_hints": 1,
+      "wrong_attempt_penalty": 2.0,
+      "time_bonus_multiplier": 0.8
     }
   }
-
-  // 指令處理
-  function processCommand(cmd) {
-    switch (cmd) {
-      case '/start':
-        resetGameState();
-        appendToLog('🎭 遊戲開始！歡迎來到萬聖夜驚變！', 'system-message');
-        appendToLog('你發現自己身處一座古老的莊園中，化裝舞會正在進行...', 'level-prompt');
-        audioManager.play('thunder', 80);
-        setTimeout(() => audioManager.playMusic(), 1000);
-        break;
-        
-      case '/hint':
-        if (gameState.hintCount >= GAME_CONSTANTS.MAX_HINTS) {
-          appendToLog('❌ 沒有剩餘提示了', 'error-message');
-          audioManager.play('error');
-        } else {
-          gameState.hintCount++;
-          const hint = getCurrentLevelHint();
-          appendToLog(`💡 提示 ${gameState.hintCount}/${GAME_CONSTANTS.MAX_HINTS}：\n${hint}`, 'system-message');
-          ui.updateStatus();
-          audioManager.play('success', 50);
-        }
-        break;
-        
-      case '/status':
-        const playTime = gameState.startTime ? Math.floor((Date.now() - gameState.startTime) / 1000) : 0;
-        const accuracy = utils.calculateAccuracy();
-        const statusText = `📊 當前狀態\n━━━━━━━━━━━━━━\n🏠 位置： ${ui.getCurrentLevelData()?.name || '準備開始'}\n🔍 收集線索： ${gameState.flags.join(', ') || '無'}\n💡 剩餘提示： ${Math.max(0, GAME_CONSTANTS.MAX_HINTS - gameState.hintCount)}/${GAME_CONSTANTS.MAX_HINTS}\n⏱️ 調查時間： ${utils.formatTime(playTime)}\n🎯 推理準確度： ${accuracy}%`;
-        appendToLog(statusText, 'system-message');
-        break;
-        
-      case '/save':
-        if (saveGame()) {
-          appendToLog('💾 遊戲已保存！', 'system-message');
-          audioManager.play('success', 30);
-        } else {
-          appendToLog('❌ 保存失敗', 'error-message');
-        }
-        break;
-        
-      case '/load':
-        if (loadGame()) {
-          appendToLog('📂 遊戲已載入！', 'system-message');
-          audioManager.play('success', 30);
-        } else {
-          appendToLog('❌ 沒有找到存檔', 'error-message');
-        }
-        break;
-        
-      default:
-        handleUserInput(cmd.replace('/', ''));
-    }
-  }
-
-  function getCurrentLevelHint() {
-    const hints = [
-      '仔細觀察每個細節，線索可能隱藏在最不起眼的地方',
-      '注意角色證詞中的矛盾之處',
-      '收集所有線索可以解鎖隱藏劇情'
-    ];
-    return hints[Math.min(gameState.hintCount - 1, hints.length - 1)];
-  }
-
-  function handleUserInput(text) {
-    if (!text?.trim()) return;
-    
-    appendToLog(`> ${text}`, 'user-input');
-    
-    // 簡單的回應邏輯
-    if (text.toLowerCase().includes('檢查') || text.toLowerCase().includes('調查')) {
-      appendToLog('🔍 你仔細檢查了周圍，發現了一些有趣的線索...', 'success-message');
-      audioManager.play('success');
-    } else if (text.toLowerCase().includes('幫助') || text.toLowerCase().includes('說明')) {
-      appendToLog('📖 遊戲說明：\n• 使用 /start 開始遊戲\n• 使用 /hint 獲取提示\n• 使用 /status 查看狀態\n• 輸入調查指令進行探索', 'system-message');
-    } else {
-      appendToLog('❓ 請嘗試其他指令，或使用 /hint 獲取提示', 'warning-message');
-    }
-  }
-
-  // 遊戲存檔系統
-  function saveGame() {
-    const saveData = {
-      ...gameState,
-      timestamp: Date.now(),
-      version: 2.0
-    };
-    
-    return utils.saveToStorage(GAME_CONSTANTS.SAVE_KEY, saveData);
-  }
-
-  function loadGame() {
-    const saveData = utils.loadFromStorage(GAME_CONSTANTS.SAVE_KEY);
-    
-    if (!saveData) return false;
-    
-    Object.assign(gameState, saveData);
-    ui.updateStatus();
-    ui.updateCluesList();
-    
-    return true;
-  }
-
-  function resetGameState() {
-    const oldSettings = gameState.settings;
-    
-    gameState = {
-      level: 1,
-      flags: [],
-      hintCount: 0,
-      score: 0,
-      wrongAttempts: 0,
-      startTime: Date.now(),
-      achievements: [],
-      isGameCompleted: false,
-      currentEnding: null,
-      settings: oldSettings
-    };
-    
-    ui.updateStatus();
-    ui.updateCluesList();
-  }
-
-  // 設定系統
-  function loadSettings() {
-    const savedSettings = utils.loadFromStorage(GAME_CONSTANTS.SETTINGS_KEY);
-    if (savedSettings) {
-      gameState.settings = { ...gameState.settings, ...savedSettings };
-    }
-    applySettings();
-  }
-
-  function applySettings() {
-    const settings = gameState.settings;
-    
-    if (elements.soundToggle) elements.soundToggle.checked = settings.soundEnabled;
-    if (elements.musicToggle) elements.musicToggle.checked = settings.musicEnabled;
-    if (elements.volumeSlider) elements.volumeSlider.value = settings.volume;
-    if (elements.volumeValue) elements.volumeValue.textContent = settings.volume;
-    if (elements.difficultySelect) elements.difficultySelect.value = settings.difficulty;
-  }
-
-  function saveSettings() {
-    utils.saveToStorage(GAME_CONSTANTS.SETTINGS_KEY, gameState.settings);
-  }
-
-  // 事件監聽器設定
-  function setupEventListeners() {
-    // 主要輸入事件
-    if (elements.sendBtn) {
-      elements.sendBtn.addEventListener('click', handleSendClick);
-    }
-    
-    if (elements.input) {
-      elements.input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleSendClick();
-        }
-      });
-    }
-
-    // 快速按鈕事件
-    const buttonMap = {
-      hintBtn: '/hint',
-      statusBtn: '/status',
-      saveBtn: '/save',
-      loadBtn: '/load'
-    };
-    
-    Object.entries(buttonMap).forEach(([elementKey, command]) => {
-      const element = elements[elementKey];
-      if (element) {
-        element.addEventListener('click', () => processCommand(command));
-      }
-    });
-
-    // 設定面板事件
-    if (elements.settingsBtn) {
-      elements.settingsBtn.addEventListener('click', () => {
-        if (elements.settingsPanel) {
-          elements.settingsPanel.classList.remove('hidden');
-        }
-      });
-    }
-    
-    if (elements.closeSettings) {
-      elements.closeSettings.addEventListener('click', () => {
-        if (elements.settingsPanel) {
-          elements.settingsPanel.classList.add('hidden');
-        }
-      });
-    }
-
-    // 設定控制項
-    if (elements.soundToggle) {
-      elements.soundToggle.addEventListener('change', (e) => {
-        gameState.settings.soundEnabled = e.target.checked;
-        saveSettings();
-      });
-    }
-    
-    if (elements.musicToggle) {
-      elements.musicToggle.addEventListener('change', (e) => {
-        gameState.settings.musicEnabled = e.target.checked;
-        if (e.target.checked) {
-          audioManager.playMusic();
-        } else {
-          audioManager.stopMusic();
-        }
-        saveSettings();
-      });
-    }
-    
-    if (elements.volumeSlider) {
-      elements.volumeSlider.addEventListener('input', (e) => {
-        const volume = parseInt(e.target.value);
-        audioManager.setVolume(volume);
-        if (elements.volumeValue) {
-          elements.volumeValue.textContent = volume;
-        }
-        saveSettings();
-      });
-    }
-    
-    if (elements.difficultySelect) {
-      elements.difficultySelect.addEventListener('change', (e) => {
-        gameState.settings.difficulty = e.target.value;
-        saveSettings();
-      });
-    }
-    
-    if (elements.resetGame) {
-      elements.resetGame.addEventListener('click', () => {
-        if (confirm('確定要重置所有遊戲進度嗎？')) {
-          resetGameState();
-          appendToLog('🔄 遊戲已重置', 'system-message');
-        }
-      });
-    }
-
-    // 全螢幕按鈕
-    if (elements.fullscreenBtn) {
-      elements.fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(err => {
-            console.warn('無法進入全螢幕模式:', err);
-          });
-        } else {
-          document.exitFullscreen();
+}
