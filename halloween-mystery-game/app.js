@@ -143,8 +143,13 @@ const gameLogic = {
 
 
   bindEvents() {
-    elements.sendBtn.addEventListener('click', ()=> this.onSend());  // 綁定送出按鈕[2]
-    elements.input.addEventListener('keypress', e=> { if (e.key==='Enter') this.onSend(); });
+    elements.sendBtn.addEventListener('click', () => this.handleInput());
+    elements.input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // 防止可能的預設行為
+            this.handleInput();
+        }
+    });
     elements.hintBtn.addEventListener('click', ()=> this.onHint());
     elements.statusBtn.addEventListener('click', ()=> this.onStatus());
     elements.saveBtn.addEventListener('click', ()=> this.onSave());
