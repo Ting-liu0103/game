@@ -75,19 +75,7 @@
   <meta name="msapplication-config" content="browserconfig.xml">
   
   <!-- 樣式表 -->
-  <link rel="preload" href="styles/critical.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <link rel="stylesheet" href="styles/main.css" media="print" onload="this.media='all'">
-  <noscript>
-    <link rel="stylesheet" href="styles/critical.css">
-    <link rel="stylesheet" href="styles/main.css">
-  </noscript>
-  
-  <!-- 預載入關鍵音效 -->
-  <link rel="preload" href="assets/sounds/thunder.mp3" as="audio" crossorigin>
-  <link rel="preload" href="assets/sounds/ambient.mp3" as="audio" crossorigin>
-  
-  <!-- 安全性標頭 -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; media-src 'self'; img-src 'self' data:;">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="game-body" data-theme="dark">
@@ -489,7 +477,6 @@
     您的瀏覽器不支援音效播放
   </audio>
 
-
   <!-- 無 JavaScript 時的提示 -->
   <noscript>
     <div class="noscript-warning">
@@ -527,7 +514,6 @@
       // 設定錯誤處理
       window.addEventListener('error', function(e) {
         console.error('遊戲錯誤:', e.error);
-        // 可以在這裡添加錯誤回報邏輯
       });
       
       // 設定未處理的 Promise 拒絕
@@ -539,44 +525,6 @@
   </script>
 
   <!-- 主要遊戲邏輯 -->
-  <script src="scripts/app.js" defer></script>
-  
-  <!-- Service Worker 註冊 -->
-  <script>
-    // Service Worker 註冊（非關鍵路徑）
-    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
-          .then(function(registration) {
-            console.log('Service Worker 註冊成功:', registration.scope);
-            
-            // 檢查更新
-            registration.addEventListener('updatefound', function() {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', function() {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // 有新版本可用
-                  if (confirm('遊戲有新版本可用，是否重新載入？')) {
-                    window.location.reload();
-                  }
-                }
-              });
-            });
-          })
-          .catch(function(error) {
-            console.log('Service Worker 註冊失敗:', error);
-          });
-      });
-    }
-  </script>
-
-  <!-- 分析代碼（可選） -->
-  <script>
-    // Google Analytics 或其他分析工具
-    // 只在生產環境載入
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      // 在這裡添加分析代碼
-    }
-  </script>
+  <script src="app.js" defer></script>
 </body>
 </html>
