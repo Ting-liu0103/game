@@ -130,14 +130,17 @@ const gameLogic = {
     }
   },
   showLoading() {
-    document.getElementById('loading-screen').classList.remove('loading--hidden');
+      // 確保移除的是 style.css 中定義的正確 class 名稱
+      document.getElementById('loading-screen').classList.remove('loading--hidden');
   },
   hideLoading() {
+      // 確保添加的是 style.css 中定義的正確 class 名稱
       document.getElementById('loading-screen').classList.add('loading--hidden');
       document.body.classList.add('game-loaded');
-      // 【新增此行】移除遊戲主介面的隱藏 class，使其顯示出來
+      // 同時，移除遊戲主介面的隱藏 class，解決白畫面問題
       document.querySelector('.game').classList.remove('game--hidden');
   },
+
 
   bindEvents() {
     elements.sendBtn.addEventListener('click', ()=> this.onSend());  // 綁定送出按鈕[2]
