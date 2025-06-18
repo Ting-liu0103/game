@@ -257,8 +257,9 @@
   // 遊戲邏輯
   const gameLogic = {
     async loadStoryData() {
+      const storyPath = './story.json';
       try {
-        const response = await fetch('story.json');
+        const response = await fetch(storyPath);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
