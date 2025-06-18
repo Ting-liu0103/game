@@ -1,1690 +1,934 @@
-/* ===== style.css (修正版) ===== */
-
-/* ==================== CSS 變數定義 ==================== */
-
-:root {
-    /* 主要色彩 */
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #2a2a2a;
-    --bg-accent: #3a2a1a;
-    
-    /* 萬聖節主題色 */
-    --orange-primary: #ff6b35;
-    --orange-secondary: #ff8c42;
-    --orange-dark: #cc4125;
-    --purple-primary: #6a0dad;
-    --purple-secondary: #8a2be2;
-    --red-blood: #8b0000;
-    --gold-accent: #ffd700;
-    
-    /* 文字色彩 */
-    --text-primary: #f0f0f0;
-    --text-secondary: #cccccc;
-    --text-muted: #999999;
-    --text-error: #ff4444;
-    --text-success: #44ff44;
-    --text-warning: #ffaa44;
-    
-    /* 邊框與陰影 */
-    --border-color: #444444;
-    --border-accent: #666666;
-    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.4);
-    --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.3);
-    
-    /* 字體 */
-    --font-main: 'Noto Serif TC', serif;
-    --font-title: 'Creepster', cursive;
-    --font-mono: 'Courier New', monospace;
-    
-    /* 尺寸 */
-    --border-radius: 8px;
-    --border-radius-small: 4px;
-    --border-radius-large: 12px;
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-    
-    /* 動畫 */
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.3s ease;
-    --transition-slow: 0.5s ease;
-    
-    /* Z-index 層級管理 */
-    --z-base: 1;
-    --z-dropdown: 1000;
-    --z-sticky: 1020;
-    --z-fixed: 1030;
-    --z-modal-backdrop: 1040;
-    --z-modal: 1050;
-    --z-popover: 1060;
-    --z-tooltip: 1070;
-    --z-toast: 1080;
-}
-
-/* 淺色主題變數 */
-[data-theme="light"] {
-    --bg-primary: #f5f5f5;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #e8e8e8;
-    --bg-accent: #f0e6d2;
-    --text-primary: #2c2c2c;
-    --text-secondary: #555555;
-    --text-muted: #777777;
-    --border-color: #cccccc;
-    --border-accent: #999999;
-    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
-    --shadow-heavy: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* 高對比模式變數 */
-[data-theme="high-contrast"] {
-    --bg-primary: #000000;
-    --bg-secondary: #000000;
-    --bg-tertiary: #111111;
-    --bg-accent: #222222;
-    --text-primary: #ffffff;
-    --text-secondary: #ffffff;
-    --text-muted: #cccccc;
-    --text-error: #ff0000;
-    --text-success: #00ff00;
-    --text-warning: #ffff00;
-    --orange-primary: #ffaa00;
-    --orange-secondary: #ffcc00;
-    --orange-dark: #ff8800;
-    --border-color: #ffffff;
-    --border-accent: #ffffff;
-    --shadow-glow: 0 0 20px rgba(255, 170, 0, 0.8);
-}
-
-/* ==================== 基礎重置與設定 ==================== */
-
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-    font-size: 16px;
-}
-
-body,
-.game-body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-accent) 100%);
-    color: var(--text-primary);
-    font-family: var(--font-main);
-    font-size: 1rem;
-    line-height: 1.6;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-    transition: background-color var(--transition-medium), color var(--transition-medium);
-}
-
-/* 萬聖節背景效果 */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-        radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(106, 13, 173, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(139, 0, 0, 0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
-    opacity: 1;
-    transition: opacity var(--transition-medium);
-}
-
-[data-theme="light"] body::before {
-    opacity: 0.3;
-}
-
-[data-theme="high-contrast"] body::before {
-    display: none;
-}
-
-/* ==================== 無障礙輔助類別 ==================== */
-
-.visually-hidden {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
-}
-
-.skip-link {
-    position: absolute;
-    top: -40px;
-    left: 6px;
-    background: var(--orange-primary);
-    color: var(--text-primary);
-    padding: 8px;
-    text-decoration: none;
-    border-radius: var(--border-radius-small);
-    z-index: var(--z-toast);
-    transition: top var(--transition-fast);
-}
-
-.skip-link:focus {
-    top: 6px;
-}
-
-/* ==================== 載入畫面 ==================== */
-
-.loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(135deg, #0a0a0a 0%, #3a2a1a 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.loading-screen.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.loading-content {
-    text-align: center;
-    max-width: 400px;
-    padding: 2rem;
-    background: rgba(26, 26, 26, 0.9);
-    border-radius: 12px;
-    border: 2px solid #ff6b35;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-}
-
-.pumpkin-loader {
-    font-size: 4rem;
-    margin-bottom: 1.5rem;
-    display: inline-block;
-}
-
-/* 動畫優化 - 支援 prefers-reduced-motion */
-@media (prefers-reduced-motion: no-preference) {
-    .pumpkin-loader {
-        animation: pumpkinBounce 2s ease-in-out infinite;
+// ===== app.js (完整修正版) =====
+(() => {
+  // 遊戲狀態管理
+  let gameState = {
+    level: 0,
+    flags: [],
+    hintCount: 0,
+    score: 0,
+    wrongAttempts: 0,
+    startTime: null,
+    achievements: [],
+    isGameCompleted: false,
+    currentEnding: null,
+    settings: {
+      soundEnabled: true,
+      musicEnabled: true,
+      volume: 70,
+      difficulty: 'normal'
     }
-    
-    @keyframes pumpkinBounce {
-        0%, 100% {
-            transform: translateY(0) rotate(0deg);
+  };
+
+  let storyData = null;
+  let isGameLoaded = false;
+  let currentAudio = null;
+
+  // 修正後的常量定義 - 移除 MAX_HINTS 冗餘
+  const GAME_CONSTANTS = {
+    MAX_LEVELS: 7,
+    SAVE_KEY: 'halloween_save',
+    SETTINGS_KEY: 'halloween_settings',
+    CLUE_NAMES: {
+      'A': '但丁密文',
+      'B': '黏土腳印樣本',
+      'C': '夜行者披風',
+      'D': '血漬地圖'
+    }
+  };
+
+  // 新增獲取最大提示數的函數
+  const getMaxHints = () => {
+    return storyData?.game_config?.max_hints || 3;
+  };
+
+  // DOM 元素引用
+  const elements = {
+    log: document.getElementById('log'),
+    input: document.getElementById('input'),
+    sendBtn: document.getElementById('send'),
+    currentLocation: document.getElementById('current-location'),
+    cluesCount: document.getElementById('clues-count'),
+    hintsRemaining: document.getElementById('hints-remaining'),
+    scoreDisplay: document.getElementById('score-display'),
+    hintBtn: document.getElementById('hint-btn'),
+    statusBtn: document.getElementById('status-btn'),
+    saveBtn: document.getElementById('save-btn'),
+    loadBtn: document.getElementById('load-btn'),
+    cluesList: document.getElementById('clues-list'),
+    progressFill: document.getElementById('progress-fill'),
+    progressCurrent: document.getElementById('progress-current'),
+    progressTotal: document.getElementById('progress-total'),
+    settingsPanel: document.getElementById('settings-panel'),
+    settingsBtn: document.getElementById('settings-btn'),
+    closeSettings: document.getElementById('close-settings'),
+    soundToggle: document.getElementById('sound-toggle'),
+    musicToggle: document.getElementById('music-toggle'),
+    volumeSlider: document.getElementById('volume-slider'),
+    volumeValue: document.getElementById('volume-value'),
+    difficultySelect: document.getElementById('difficulty-select'),
+    resetGame: document.getElementById('reset-game'),
+    inputSuggestions: document.getElementById('input-suggestions'),
+    fullscreenBtn: document.getElementById('fullscreen-btn'),
+    helpBtn: document.getElementById('help-btn'),
+    thunderSound: document.getElementById('thunder-sound'),
+    ambientSound: document.getElementById('ambient-sound'),
+    successSound: document.getElementById('success-sound'),
+    errorSound: document.getElementById('error-sound'),
+    achievementsList: document.getElementById('achievements-list')
+  };
+
+  // 工具函數
+  const utils = {
+    formatText(text, variables = {}) {
+      if (!text) return '';
+      return text.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+        return variables[key] !== undefined ? variables[key] : match;
+      });
+    },
+
+    saveToStorage(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+        return true;
+      } catch (error) {
+        console.error(`存儲失敗 [${key}]:`, error);
+        return false;
+      }
+    },
+
+    loadFromStorage(key) {
+      try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+      } catch (error) {
+        console.error(`讀取失敗 [${key}]:`, error);
+        return null;
+      }
+    },
+
+    formatTime(seconds) {
+      if (!seconds || seconds < 0) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    },
+
+    calculateAccuracy() {
+      const totalAttempts = gameState.wrongAttempts + this.getCurrentLevel();
+      if (totalAttempts === 0) return 100;
+      const correctAttempts = this.getCurrentLevel();
+      return Math.round((correctAttempts / totalAttempts) * 100);
+    },
+
+    getCurrentLevel() {
+      return Math.max(0, gameState.level);
+    },
+
+    checkRequiredFlags(requiredFlags) {
+      if (!requiredFlags || !Array.isArray(requiredFlags)) return true;
+      return requiredFlags.every(flag => gameState.flags.includes(flag));
+    }
+  };
+
+  // 音效系統
+  const audioManager = {
+    play(soundId, volume = null) {
+      if (!gameState.settings.soundEnabled) return;
+      
+      const audioElement = elements[soundId + 'Sound'];
+      if (!audioElement) return;
+
+      try {
+        const targetVolume = (volume !== null ? volume : gameState.settings.volume) / 100;
+        audioElement.volume = Math.max(0, Math.min(1, targetVolume));
+        audioElement.currentTime = 0;
+        audioElement.play().catch(error => {
+          console.warn(`音效播放失敗 [${soundId}]:`, error);
+        });
+      } catch (error) {
+        console.warn(`音效設定失敗 [${soundId}]:`, error);
+      }
+    },
+
+    playMusic(loop = true) {
+      if (!gameState.settings.musicEnabled) return;
+      
+      this.stopMusic();
+      const musicElement = elements.ambientSound;
+      if (!musicElement) return;
+
+      try {
+        currentAudio = musicElement;
+        currentAudio.loop = loop;
+        currentAudio.volume = gameState.settings.volume / 100 * 0.3;
+        currentAudio.play().catch(error => {
+          console.warn('背景音樂播放失敗:', error);
+        });
+      } catch (error) {
+        console.warn('背景音樂設定失敗:', error);
+      }
+    },
+
+    stopMusic() {
+      if (currentAudio) {
+        try {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+          currentAudio = null;
+        } catch (error) {
+          console.warn('停止背景音樂失敗:', error);
         }
-        25% {
-            transform: translateY(-20px) rotate(-5deg);
+      }
+    },
+
+    setVolume(volume) {
+      gameState.settings.volume = Math.max(0, Math.min(100, volume));
+      if (currentAudio) {
+        currentAudio.volume = gameState.settings.volume / 100 * 0.3;
+      }
+    }
+  };
+
+  // 成就系統
+  const achievementSystem = {
+    // 安全的條件解析器
+    evaluateCondition(conditionString, gameContext) {
+      if (!conditionString || typeof conditionString !== 'string') {
+        return false;
+      }
+
+      try {
+        // 創建安全的評估環境
+        const safeContext = this.createSafeContext(gameContext);
+        
+        // 使用 Function 構造器而非 eval，提高安全性
+        const evaluator = new Function('context', `
+          with (context) {
+            try {
+              return !!(${conditionString});
+            } catch (e) {
+              console.warn('條件評估錯誤:', e.message);
+              return false;
+            }
+          }
+        `);
+
+        return evaluator(safeContext);
+      } catch (error) {
+        console.error('成就條件解析失敗:', error);
+        return false;
+      }
+    },
+
+    // 創建安全的評估上下文
+    createSafeContext(gameContext) {
+      return {
+        flags_count: gameContext.flags?.length || 0,
+        hint_count: gameContext.hintCount || 0,
+        game_completed: gameContext.isGameCompleted || false,
+        ending: gameContext.currentEnding || null,
+        ultimate_truth_discovered: gameContext.achievements?.includes('truth_master') || false,
+        level: gameContext.level || 0,
+        score: gameContext.score || 0,
+        wrong_attempts: gameContext.wrongAttempts || 0
+      };
+    },
+
+    // 檢查並解鎖成就
+    checkAchievements() {
+      if (!storyData?.achievements) return;
+
+      const gameContext = {
+        flags: gameState.flags,
+        hintCount: gameState.hintCount,
+        isGameCompleted: gameState.isGameCompleted,
+        currentEnding: gameState.currentEnding,
+        achievements: gameState.achievements,
+        level: gameState.level,
+        score: gameState.score,
+        wrongAttempts: gameState.wrongAttempts
+      };
+
+      storyData.achievements.forEach(achievement => {
+        // 跳過已解鎖的成就
+        if (gameState.achievements.includes(achievement.id)) {
+          return;
         }
-        50% {
-            transform: translateY(-10px) rotate(0deg);
+
+        // 評估成就條件
+        if (this.evaluateCondition(achievement.condition, gameContext)) {
+          this.unlockAchievement(achievement);
         }
-        75% {
-            transform: translateY(-20px) rotate(5deg);
+      });
+    },
+
+    // 解鎖成就
+    unlockAchievement(achievement) {
+      if (!gameState.achievements.includes(achievement.id)) {
+        gameState.achievements.push(achievement.id);
+        
+        // 顯示成就解鎖通知
+        gameLogic.addMessage(
+          `🏆 成就解鎖！\n【${achievement.name}】\n${achievement.description}`,
+          'achievement-message'
+        );
+
+        // 播放成就音效
+        audioManager.play('success');
+        
+        // 更新 UI
+        this.updateAchievementsUI();
+      }
+    },
+
+    // 更新成就 UI 顯示
+    updateAchievementsUI() {
+      if (!elements.achievementsList) return;
+
+      const achievementsHtml = storyData.achievements.map(achievement => {
+        const isUnlocked = gameState.achievements.includes(achievement.id);
+        const statusClass = isUnlocked ? 'unlocked' : 'locked';
+        const icon = isUnlocked ? '🏆' : '🔒';
+        
+        return `
+          <div class="achievement ${statusClass}">
+            <span class="achievement-icon">${icon}</span>
+            <span class="achievement-name">${achievement.name}</span>
+            ${isUnlocked ? `<div class="achievement-desc">${achievement.description}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      elements.achievementsList.innerHTML = achievementsHtml;
+    }
+  };
+
+  // UI 更新函數
+  const ui = {
+    updateStatus() {
+      const currentLevel = utils.getCurrentLevel();
+      const levelData = this.getCurrentLevelData();
+      const maxHints = getMaxHints(); // 使用動態獲取的最大提示數
+
+      if (elements.currentLocation) {
+        elements.currentLocation.textContent = levelData?.name || '準備開始';
+      }
+
+      if (elements.cluesCount) {
+        elements.cluesCount.textContent = `線索: ${gameState.flags.length}/4`;
+      }
+
+      const remainingHints = Math.max(0, maxHints - gameState.hintCount);
+      if (elements.hintsRemaining) {
+        elements.hintsRemaining.textContent = `提示: ${remainingHints}/${maxHints}`;
+      }
+
+      if (elements.scoreDisplay) {
+        elements.scoreDisplay.textContent = `分數: ${gameState.score}`;
+      }
+
+      this.updateProgressBar(currentLevel);
+      this.updateButtonStates(remainingHints);
+    },
+
+    updateProgressBar(currentLevel) {
+      if (!elements.progressFill) return;
+
+      const totalLevels = GAME_CONSTANTS.MAX_LEVELS;
+      const progress = Math.min(100, (currentLevel / totalLevels) * 100);
+      elements.progressFill.style.width = `${progress}%`;
+
+      if (elements.progressCurrent) {
+        elements.progressCurrent.textContent = currentLevel;
+      }
+      if (elements.progressTotal) {
+        elements.progressTotal.textContent = totalLevels;
+      }
+    },
+
+    updateButtonStates(remainingHints) {
+      if (elements.hintBtn) {
+        elements.hintBtn.disabled = remainingHints <= 0;
+      }
+    },
+
+    getCurrentLevelData() {
+      return storyData?.levels?.find(l => l.id === gameState.level);
+    },
+
+    updateCluesList() {
+      if (!elements.cluesList) return;
+
+      if (gameState.flags.length === 0) {
+        elements.cluesList.innerHTML = '<div class="no-clues">尚未發現任何線索</div>';
+        return;
+      }
+
+      const cluesHtml = gameState.flags.map(flag => {
+        const clueName = GAME_CONSTANTS.CLUE_NAMES[flag] || `線索 ${flag}`;
+        return `<div class="clue-item">🔍 ${clueName}</div>`;
+      }).join('');
+
+      elements.cluesList.innerHTML = cluesHtml;
+    }
+  };
+
+  // 遊戲邏輯
+  const gameLogic = {
+    async loadStoryData() {
+      const storyPath = './story.json';
+      try {
+        const response = await fetch(storyPath);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
-}
+        storyData = await response.json();
+        console.log('故事數據載入成功');
+        return true;
+      } catch (error) {
+        console.error('載入故事數據失敗:', error);
+        this.addMessage('❌ 遊戲數據載入失敗，請重新整理頁面', 'error-message');
+        return false;
+      }
+    },
 
-.loading-content h2 {
-    font-family: 'Creepster', cursive;
-    color: #ff6b35;
-    margin: 0 0 1.5rem 0;
-    font-size: 2rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-}
+    // 實現 getCurrentHint 函數
+    getCurrentHint() {
+      if (!storyData?.levels || gameState.level <= 0) {
+        return '目前沒有可用的提示';
+      }
 
-.loading-bar {
-    width: 100%;
-    height: 8px;
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius-small);
-    overflow: hidden;
-    margin-bottom: var(--spacing-md);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
+      const currentLevelData = storyData.levels.find(level => level.id === gameState.level);
+      if (!currentLevelData?.hints || !Array.isArray(currentLevelData.hints)) {
+        return '此關卡沒有提示';
+      }
 
-.loading-progress {
-    height: 100%;
-    background: linear-gradient(90deg, var(--orange-primary), var(--orange-secondary));
-    width: 0%;
-    transition: width var(--transition-medium);
-    border-radius: var(--border-radius-small);
-    box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
-}
+      const maxHints = getMaxHints();
+      const hintIndex = Math.min(gameState.hintCount, currentLevelData.hints.length - 1);
+      
+      if (gameState.hintCount >= maxHints) {
+        return '已達到最大提示次數';
+      }
 
-.loading-text {
-    color: var(--text-secondary);
-    font-style: italic;
-    margin: 0;
-}
+      return currentLevelData.hints[hintIndex] || '沒有更多提示了';
+    },
 
-@media (prefers-reduced-motion: no-preference) {
-    .loading-text {
-        animation: fadeInOut 2s ease-in-out infinite;
-    }
-    
-    @keyframes fadeInOut {
-        0%, 100% { opacity: 0.7; }
-        50% { opacity: 1; }
-    }
-}
+    addMessage(text, className = 'system-message') {
+      if (!elements.log) return;
 
-/* ==================== 主遊戲容器 ==================== */
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `log-message ${className}`;
+      messageDiv.innerHTML = text;
+      elements.log.appendChild(messageDiv);
+      elements.log.scrollTop = elements.log.scrollHeight;
+    },
 
-.game-container {
-    display: grid;
-    grid-template-areas:
-        "header header"
-        "main sidebar";
-    grid-template-columns: 1fr 300px;
-    grid-template-rows: auto 1fr;
-    height: 100vh;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    background: linear-gradient(135deg, #0a0a0a 0%, #3a2a1a 100%);
-    transition: opacity 0.3s ease;
-    overflow: hidden;
-}
+    processInput(input) {
+      if (!input.trim()) return;
 
-.game-container.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
+      // 顯示用戶輸入
+      this.addMessage(`> ${input}`, 'user-input');
 
-/* 確保在載入完成前隱藏遊戲容器 */
-body:not(.game-loaded) .game-container {
-    display: none;
-}
+      // 處理全域命令
+      if (this.handleGlobalCommands(input)) {
+        return;
+      }
 
-/* ==================== 遊戲標題區 ==================== */
+      // 處理關卡邏輯
+      this.handleLevelInput(input);
+    },
 
-.game-header {
-    grid-area: header;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-medium);
-    position: relative;
-    overflow: hidden;
-}
+    handleGlobalCommands(input) {
+      const command = input.toLowerCase().trim();
+      const globalCommands = storyData?.globals;
 
-@media (prefers-reduced-motion: no-preference) {
-    .game-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
-        animation: headerGlow 4s ease-in-out infinite;
-        pointer-events: none;
-    }
-    
-    @keyframes headerGlow {
-        0%, 100% { opacity: 0.3; transform: scale(1); }
-        50% { opacity: 0.6; transform: scale(1.1); }
-    }
-}
+      if (!globalCommands) return false;
 
-.game-title {
-    text-align: center;
-    margin: 0 0 var(--spacing-lg) 0;
-    position: relative;
-    z-index: var(--z-base);
-}
+      if (globalCommands[command]) {
+        const commandData = globalCommands[command];
+        let response = commandData.response || commandData.response_template || '';
 
-.title-main {
-    display: block;
-    font-family: 'Creepster', 'Times New Roman', serif;
-    font-size: 2.5rem;
-    color: var(--orange-primary);
-    text-shadow:
-        2px 2px 4px rgba(0, 0, 0, 0.8),
-        0 0 20px rgba(255, 107, 53, 0.5);
-    margin-bottom: var(--spacing-xs);
-    line-height: 1.2;
-}
+        // 處理模板變數
+        response = utils.formatText(response, {
+          hint_number: gameState.hintCount + 1,
+          max_hints: getMaxHints(), // 使用動態獲取的最大提示數
+          remaining_hints: Math.max(0, getMaxHints() - gameState.hintCount),
+          level_name: ui.getCurrentLevelData()?.name || '未知位置',
+          flags_display: gameState.flags.join(', ') || '無',
+          time_elapsed: utils.formatTime(Math.floor((Date.now() - (gameState.startTime || Date.now())) / 1000)),
+          accuracy_percentage: utils.calculateAccuracy(),
+          current_level_hint: this.getCurrentHint()
+        });
 
-@media (prefers-reduced-motion: no-preference) {
-    .title-main {
-        animation: titleFlicker 3s ease-in-out infinite;
-    }
-    
-    @keyframes titleFlicker {
-        0%, 100% {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 107, 53, 0.5);
+        this.addMessage(response, 'system-message');
+
+        // 執行命令動作
+        if (commandData.action) {
+          this.executeAction(commandData.action);
         }
-        50% {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 107, 53, 0.8);
+
+        return true;
+      }
+
+      return false;
+    },
+
+    // 擴展關卡輸入處理
+    handleLevelInput(input) {
+      const currentLevelData = ui.getCurrentLevelData();
+      if (!currentLevelData) {
+        this.addMessage('❌ 找不到當前關卡數據', 'error-message');
+        return;
+      }
+
+      const inputLower = input.toLowerCase().trim();
+
+      // 處理特殊跳過邏輯
+      if (inputLower === '跳過' && gameState.level === 2) {
+        this.handleSkipLogic();
+        return;
+      }
+
+      // 處理分支觸發
+      if (this.handleBranches(currentLevelData, input)) {
+        return;
+      }
+
+      // 處理答案檢查
+      this.checkAnswers(currentLevelData, input);
+    },
+
+    // 新增跳過邏輯處理
+    handleSkipLogic() {
+      if (gameState.level === 2 && gameState.flags.includes('B')) {
+        this.addMessage('🛤️ 你選擇跳過暗道探索，回到主線劇情...', 'system-message');
+        this.addMessage('🚪 通往餐廳的秘密通道已開啟！', 'system-message');
+        
+        // 直接進入下一關
+        gameState.level = 3;
+        gameState.score += 50; // 給予少量分數
+        
+        ui.updateStatus();
+        this.showCurrentLevel();
+        audioManager.play('success');
+      } else {
+        this.addMessage('❌ 目前無法使用跳過功能', 'error-message');
+      }
+    },
+
+    handleBranches(levelData, input) {
+      if (!levelData.branches) return false;
+
+      for (const branch of levelData.branches) {
+        if (branch.trigger && branch.trigger.some(trigger => 
+          input.toLowerCase().includes(trigger.toLowerCase())
+        )) {
+          // 檢查是否需要特定線索
+          if (branch.requires_flags && !utils.checkRequiredFlags(branch.requires_flags)) {
+            this.addMessage('❌ 你需要更多線索才能進行這個調查', 'error-message');
+            return true;
+          }
+
+          // 執行分支邏輯
+          this.addMessage(branch.response, 'system-message');
+
+          // 添加線索
+          if (branch.flag && !gameState.flags.includes(branch.flag)) {
+            gameState.flags.push(branch.flag);
+            ui.updateCluesList();
+          }
+
+          // 加分
+          if (branch.score_bonus) {
+            gameState.score += branch.score_bonus;
+          }
+
+          ui.updateStatus();
+          achievementSystem.checkAchievements();
+          return true;
         }
-    }
-}
+      }
 
-.title-sub {
-    display: block;
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    font-weight: 400;
-    letter-spacing: 2px;
-}
+      return false;
+    },
 
-.game-status {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
-    position: relative;
-    z-index: var(--z-base);
-}
+    checkAnswers(levelData, input) {
+      if (!levelData.answers) {
+        this.addMessage('❌ 此關卡沒有配置答案', 'error-message');
+        return;
+      }
 
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    background: rgba(0, 0, 0, 0.3);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--border-radius-small);
-    border: 1px solid var(--border-color);
-    transition: all var(--transition-fast);
-    min-height: 44px; /* 觸控友好的最小尺寸 */
-}
+      const inputLower = input.toLowerCase().trim();
+      let correctAnswer = null;
 
-.status-item:hover,
-.status-item:focus-within {
-    background: rgba(0, 0, 0, 0.5);
-    border-color: var(--orange-primary);
-    transform: translateY(-2px);
-}
+      // 檢查所有可能的答案
+      for (const answer of levelData.answers) {
+        if (!answer.values) continue;
 
-.status-icon {
-    font-size: 1.2rem;
-    filter: drop-shadow(0 0 5px rgba(255, 107, 53, 0.3));
-    flex-shrink: 0;
-}
-
-/* 進度條樣式 */
-.progress-container {
-    margin-top: var(--spacing-lg);
-    position: relative;
-    z-index: var(--z-base);
-}
-
-.progress-bar {
-    width: 100%;
-    height: 12px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: var(--border-radius-small);
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--orange-primary), var(--orange-secondary));
-    width: 0%;
-    transition: width var(--transition-medium);
-    border-radius: var(--border-radius-small);
-    box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
-    position: relative;
-}
-
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: progressShimmer 2s ease-in-out infinite;
-}
-
-@keyframes progressShimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-.progress-text {
-    text-align: center;
-    margin-top: var(--spacing-xs);
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-/* ==================== 主遊戲區域 ==================== */
-
-.game-main {
-    grid-area: main;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    min-height: 0;
-}
-
-.log-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    min-height: 0;
-}
-
-.game-log {
-    flex: 1;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(42, 42, 42, 0.8) 100%);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    overflow-y: auto;
-    font-family: var(--font-main);
-    line-height: 1.8;
-    box-shadow:
-        inset 0 2px 4px rgba(0, 0, 0, 0.3),
-        var(--shadow-medium);
-    position: relative;
-    scroll-behavior: smooth;
-}
-
-.game-log:focus {
-    outline: 3px solid var(--orange-primary);
-    outline-offset: -3px;
-}
-
-.game-log::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 20px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
-    pointer-events: none;
-    z-index: var(--z-base);
-}
-
-/* 自定義滾動條 */
-.game-log::-webkit-scrollbar {
-    width: 12px;
-}
-
-.game-log::-webkit-scrollbar-track {
-    background: var(--bg-primary);
-    border-radius: var(--border-radius-small);
-}
-
-.game-log::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--orange-primary), var(--orange-dark));
-    border-radius: var(--border-radius-small);
-    border: 2px solid var(--bg-primary);
-}
-
-.game-log::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, var(--orange-secondary), var(--orange-primary));
-}
-
-/* Firefox 滾動條樣式 */
-.game-log {
-    scrollbar-width: thin;
-    scrollbar-color: var(--orange-primary) var(--bg-primary);
-}
-
-/* ==================== 日誌訊息樣式 ==================== */
-
-.log-message {
-    margin-bottom: var(--spacing-md);
-    padding: var(--spacing-sm);
-    border-radius: var(--border-radius-small);
-    transition: all var(--transition-fast);
-    position: relative;
-    word-wrap: break-word;
-    hyphens: auto;
-}
-
-.log-message:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.user-input {
-    color: var(--text-primary);
-    background: rgba(255, 107, 53, 0.1);
-    border-left: 4px solid var(--orange-primary);
-    font-weight: 500;
-}
-
-.system-message {
-    color: var(--text-secondary);
-    background: rgba(106, 13, 173, 0.1);
-    border-left: 4px solid var(--purple-primary);
-    font-style: italic;
-}
-
-.success-message {
-    color: var(--text-success);
-    background: rgba(68, 255, 68, 0.1);
-    border-left: 4px solid var(--text-success);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .success-message {
-        animation: successPulse 0.5s ease-out;
-    }
-    
-    @keyframes successPulse {
-        0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 rgba(68, 255, 68, 0.4);
+        // 檢查是否需要特定線索
+        if (answer.requires_flags && !utils.checkRequiredFlags(answer.requires_flags)) {
+          continue;
         }
-        50% {
-            transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(68, 255, 68, 0.4);
+
+        // 檢查答案匹配
+        const isMatch = answer.values.some(value => 
+          inputLower === value.toLowerCase() || 
+          inputLower.includes(value.toLowerCase())
+        );
+
+        if (isMatch) {
+          correctAnswer = answer;
+          break;
         }
-        100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 rgba(68, 255, 68, 0.4);
+      }
+
+      if (correctAnswer) {
+        this.handleCorrectAnswer(correctAnswer);
+      } else {
+        this.handleWrongAnswer(levelData, input);
+      }
+    },
+
+    handleCorrectAnswer(answer) {
+      // 顯示正確回應
+      this.addMessage(answer.response, 'success-message');
+
+      // 加分
+      if (answer.score_bonus) {
+        gameState.score += answer.score_bonus;
+      }
+
+      // 添加線索
+      if (answer.flag && !gameState.flags.includes(answer.flag)) {
+        gameState.flags.push(answer.flag);
+        ui.updateCluesList();
+      }
+
+      // 檢查成就
+      if (answer.achievement) {
+        if (!gameState.achievements.includes(answer.achievement)) {
+          gameState.achievements.push(answer.achievement);
         }
-    }
-}
+      }
 
-.error-message {
-    color: var(--text-error);
-    background: rgba(255, 68, 68, 0.1);
-    border-left: 4px solid var(--text-error);
-}
+      // 進入下一關或結束遊戲
+      if (answer.next_level) {
+        gameState.level = answer.next_level;
+        setTimeout(() => {
+          this.showCurrentLevel();
+        }, 2000);
+      } else if (answer.ending) {
+        this.endGame(answer.ending);
+      }
 
-@media (prefers-reduced-motion: no-preference) {
-    .error-message {
-        animation: errorShake 0.5s ease-out;
-    }
-    
-    @keyframes errorShake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
-    }
-}
+      ui.updateStatus();
+      achievementSystem.checkAchievements();
+      audioManager.play('success');
+    },
 
-.warning-message {
-    color: var(--text-warning);
-    background: rgba(255, 170, 68, 0.1);
-    border-left: 4px solid var(--text-warning);
-}
+    handleWrongAnswer(levelData, input) {
+      gameState.wrongAttempts++;
 
-.level-prompt {
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(106, 13, 173, 0.2));
-    border: 2px solid var(--orange-primary);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    margin: var(--spacing-lg) 0;
-    position: relative;
-    overflow: hidden;
-}
+      // 檢查特定錯誤回應
+      if (levelData.wrong_responses) {
+        for (const wrongResponse of levelData.wrong_responses) {
+          if (wrongResponse.values && wrongResponse.values.some(value => 
+            input.toLowerCase().includes(value.toLowerCase())
+          )) {
+            this.addMessage(wrongResponse.response, 'error-message');
+            ui.updateStatus();
+            audioManager.play('error');
+            return;
+          }
 
-@media (prefers-reduced-motion: no-preference) {
-    .level-prompt::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -100%;
-        width: 100%;
-        height: calc(100% + 4px);
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        animation: shimmer 2s ease-in-out infinite;
-    }
-    
-    @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 100%; }
-    }
-}
-
-.branch-message {
-    background: rgba(255, 215, 0, 0.1);
-    border-left: 4px solid var(--gold-accent);
-    color: var(--gold-accent);
-}
-
-.clue-message {
-    background: rgba(255, 215, 0, 0.15);
-    border-left: 4px solid var(--gold-accent);
-    color: var(--gold-accent);
-    font-weight: 500;
-}
-
-.ending-message {
-    background: linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(255, 107, 53, 0.3));
-    border: 2px solid var(--red-blood);
-    color: var(--text-primary);
-    font-size: 1.1rem;
-    font-weight: 500;
-    text-align: center;
-    padding: var(--spacing-xl);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .ending-message {
-        animation: endingGlow 2s ease-in-out infinite;
-    }
-    
-    @keyframes endingGlow {
-        0%, 100% { box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); }
-        50% { box-shadow: 0 0 40px rgba(139, 0, 0, 0.8); }
-    }
-}
-
-.final-score {
-    background: linear-gradient(135deg, var(--purple-primary), var(--orange-primary));
-    color: var(--text-primary);
-    text-align: center;
-    padding: var(--spacing-xl);
-    border-radius: var(--border-radius);
-    margin: var(--spacing-lg) 0;
-    font-weight: 500;
-}
-
-.welcome-message {
-    text-align: center;
-    font-size: 1.2rem;
-    color: var(--orange-primary);
-    background: rgba(255, 107, 53, 0.1);
-    border: 2px dashed var(--orange-primary);
-    padding: var(--spacing-xl);
-    border-radius: var(--border-radius);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .welcome-message {
-        animation: welcomePulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes welcomePulse {
-        0%, 100% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.02); opacity: 1; }
-    }
-}
-
-/* 特殊文字樣式 */
-.log-title {
-    color: var(--orange-primary);
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
-}
-
-.log-bullet {
-    color: var(--text-secondary);
-    margin-left: var(--spacing-md);
-    display: block;
-    margin-bottom: var(--spacing-xs);
-}
-
-.log-emoji {
-    font-size: 1.2rem;
-    filter: drop-shadow(0 0 5px rgba(255, 107, 53, 0.3));
-    margin: 0 var(--spacing-xs);
-}
-
-/* ==================== 輸入區域 ==================== */
-
-.input-container {
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-md);
-    box-shadow: var(--shadow-medium);
-}
-
-.input-wrapper {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: stretch;
-}
-
-.game-input {
-    flex: 1;
-    background: var(--bg-primary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-small);
-    padding: var(--spacing-md);
-    color: var(--text-primary);
-    font-family: var(--font-main);
-    font-size: 1rem;
-    line-height: 1.4;
-    transition: all var(--transition-fast);
-    min-height: 44px;
-}
-
-.game-input:focus {
-    outline: none;
-    border-color: var(--orange-primary);
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
-    background: rgba(255, 107, 53, 0.05);
-}
-
-.game-input::placeholder {
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-.send-button {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
-    border: 2px solid var(--orange-secondary);
-    border-radius: var(--border-radius-small);
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: var(--spacing-md);
-    font-size: 1.1rem;
-    transition: all var(--transition-fast);
-    min-width: 60px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.send-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--orange-secondary), var(--orange-primary));
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-}
-
-.send-button:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.send-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.send-button:focus {
-    outline: 3px solid var(--orange-primary);
-    outline-offset: 2px;
-}
-
-.send-icon {
-    font-size: 1.2rem;
-}
-
-/* 輸入建議 */
-.input-suggestions {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-small);
-    margin-top: var(--spacing-xs);
-    box-shadow: var(--shadow-medium);
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: var(--z-dropdown);
-}
-
-.suggestion-item {
-    padding: var(--spacing-sm) var(--spacing-md);
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.suggestion-item:last-child {
-    border-bottom: none;
-}
-
-.suggestion-item:hover,
-.suggestion-item:focus {
-    background: rgba(255, 107, 53, 0.1);
-    color: var(--orange-primary);
-}
-
-/* ==================== 側邊欄 ==================== */
-
-.game-sidebar {
-    grid-area: sidebar;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-medium);
-    overflow-y: auto;
-}
-
-/* 快速動作按鈕 */
-.quick-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.quick-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-small);
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    font-family: var(--font-main);
-    font-size: 0.9rem;
-    position: relative;
-    overflow: hidden;
-    min-height: 44px;
-    text-decoration: none;
-}
-
-.quick-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.quick-btn:disabled:hover {
-    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-    border-color: var(--border-color);
-    box-shadow: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .quick-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-        transition: left var(--transition-medium);
-    }
-}
-
-.quick-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
-    border-color: var(--orange-secondary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .quick-btn:hover:not(:disabled)::before {
-        left: 100%;
-    }
-}
-
-.quick-btn:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.quick-btn:focus {
-    outline: 3px solid var(--orange-primary);
-    outline-offset: 2px;
-}
-
-.btn-icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.btn-text {
-    font-weight: 500;
-}
-
-/* 工具提示 */
-.tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--border-radius-small);
-    font-size: 0.8rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-fast);
-    z-index: var(--z-tooltip);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-medium);
-    margin-bottom: var(--spacing-xs);
-}
-
-.tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: var(--bg-primary);
-}
-
-.quick-btn:hover .tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* 線索列表 */
-.clues-section,
-.achievements-section {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: var(--border-radius-small);
-    padding: var(--spacing-md);
-    border: 1px solid var(--border-color);
-}
-
-.section-title {
-    color: var(--orange-primary);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0 0 var(--spacing-md) 0;
-    text-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
-}
-
-.clues-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.clue-item {
-    background: rgba(255, 215, 0, 0.1);
-    border: 1px solid var(--gold-accent);
-    border-radius: var(--border-radius-small);
-    padding: var(--spacing-sm);
-    color: var(--gold-accent);
-    font-size: 0.9rem;
-    transition: all var(--transition-fast);
-}
-
-.clue-item:hover {
-    background: rgba(255, 215, 0, 0.2);
-    transform: translateX(5px);
-}
-
-.no-clues {
-    color: var(--text-muted);
-    font-style: italic;
-    text-align: center;
-    padding: var(--spacing-md);
-}
-
-/* 成就系統 */
-.achievements-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.achievement {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm);
-    border-radius: var(--border-radius-small);
-    transition: all var(--transition-fast);
-    border: 1px solid transparent;
-}
-
-.achievement.locked {
-    opacity: 0.5;
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--border-color);
-}
-
-.achievement.unlocked {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: var(--gold-accent);
-    color: var(--gold-accent);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .achievement.unlocked {
-        animation: achievementUnlock 0.5s ease-out;
-    }
-    
-    @keyframes achievementUnlock {
-        0% {
-            transform: scale(0.8);
-            opacity: 0;
+          if (wrongResponse.pattern) {
+            const regex = new RegExp(wrongResponse.pattern, 'i');
+            if (regex.test(input)) {
+              this.addMessage(wrongResponse.response, 'error-message');
+              ui.updateStatus();
+              audioManager.play('error');
+              return;
+            }
+          }
         }
-        50% {
-            transform: scale(1.1);
+      }
+
+      // 使用默認錯誤回應
+      const defaultWrong = levelData.default_wrong || '❌ 請重新思考，或使用 `/hint` 獲取提示。';
+      this.addMessage(defaultWrong, 'error-message');
+      ui.updateStatus();
+      audioManager.play('error');
+    },
+
+    showCurrentLevel() {
+      const levelData = ui.getCurrentLevelData();
+      if (!levelData) {
+        this.addMessage('❌ 找不到關卡數據', 'error-message');
+        return;
+      }
+
+      this.addMessage(levelData.prompt, 'level-prompt');
+      ui.updateStatus();
+    },
+
+    executeAction(action) {
+      switch (action) {
+        case 'reset_game_state':
+          this.resetGame();
+          break;
+        case 'increment_hint_count':
+          gameState.hintCount++;
+          break;
+        case 'save_game_state':
+          this.saveGame();
+          break;
+        case 'load_game_state':
+          this.loadGame();
+          break;
+        default:
+          console.warn('未知動作:', action);
+      }
+    },
+
+    endGame(ending) {
+      gameState.isGameCompleted = true;
+      gameState.currentEnding = ending;
+      
+      // 檢查最終成就
+      achievementSystem.checkAchievements();
+      
+      // 保存遊戲狀態
+      this.saveGame();
+    },
+
+    saveGame() {
+      const saveData = {
+        gameState: { ...gameState },
+        timestamp: Date.now()
+      };
+
+      if (utils.saveToStorage(GAME_CONSTANTS.SAVE_KEY, saveData)) {
+        this.addMessage('💾 遊戲進度已保存！', 'system-message');
+      } else {
+        this.addMessage('❌ 保存失敗', 'error-message');
+      }
+    },
+
+    loadGame() {
+      const saveData = utils.loadFromStorage(GAME_CONSTANTS.SAVE_KEY);
+      if (saveData && saveData.gameState) {
+        gameState = { ...gameState, ...saveData.gameState };
+        ui.updateStatus();
+        ui.updateCluesList();
+        achievementSystem.updateAchievementsUI();
+        this.addMessage('📂 遊戲進度已載入！', 'system-message');
+        
+        if (gameState.level > 0) {
+          this.showCurrentLevel();
         }
-        100% {
-            transform: scale(1);
-            opacity: 1;
+      } else {
+        this.addMessage('❌ 沒有找到保存的遊戲', 'error-message');
+      }
+    },
+
+    resetGame() {
+      gameState = {
+        level: 0,
+        flags: [],
+        hintCount: 0,
+        score: 0,
+        wrongAttempts: 0,
+        startTime: Date.now(),
+        achievements: [],
+        isGameCompleted: false,
+        currentEnding: null,
+        settings: gameState.settings // 保留設定
+      };
+
+      ui.updateStatus();
+      ui.updateCluesList();
+      achievementSystem.updateAchievementsUI();
+      this.addMessage('🔄 遊戲已重置，準備開始新的調查...', 'system-message');
+    }
+  };
+
+  // 事件監聽器設置
+  const setupEventListeners = () => {
+    // 輸入處理
+    if (elements.input) {
+      elements.input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const input = elements.input.value.trim();
+          if (input) {
+            gameLogic.processInput(input);
+            elements.input.value = '';
+          }
         }
+      });
     }
-}
 
-.achievement-icon {
-    font-size: 1.2rem;
-    flex-shrink: 0;
-}
-
-.achievement-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-/* ==================== 設定面板 ==================== */
-
-.settings-panel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: var(--z-modal);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-medium);
-}
-
-.settings-panel.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.settings-content {
-    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: var(--shadow-heavy);
-}
-
-.settings-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color);
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.settings-header h3 {
-    color: var(--orange-primary);
-    margin: 0;
-    font-size: 1.3rem;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius-small);
-    transition: all var(--transition-fast);
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.close-btn:hover {
-    background: rgba(255, 68, 68, 0.2);
-    color: var(--text-error);
-}
-
-.settings-body {
-    padding: var(--spacing-lg);
-}
-
-.setting-group {
-    margin-bottom: var(--spacing-xl);
-}
-
-.setting-group h4 {
-    color: var(--text-primary);
-    margin: 0 0 var(--spacing-md) 0;
-    font-size: 1.1rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: var(--spacing-xs);
-}
-
-.setting-item {
-    margin-bottom: var(--spacing-md);
-}
-
-.setting-label {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    cursor: pointer;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-}
-
-.setting-label input[type="checkbox"] {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-small);
-    background: var(--bg-primary);
-    cursor: pointer;
-    position: relative;
-    transition: all var(--transition-fast);
-}
-
-.setting-label input[type="checkbox"]:checked {
-    background: var(--orange-primary);
-    border-color: var(--orange-secondary);
-}
-
-.setting-label input[type="checkbox"]:checked::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.setting-label input[type="checkbox"]:focus {
-    outline: 3px solid rgba(255, 107, 53, 0.3);
-    outline-offset: 2px;
-}
-
-.volume-slider {
-    width: 100%;
-    height: 8px;
-    background: var(--bg-primary);
-    border-radius: var(--border-radius-small);
-    outline: none;
-    margin-top: var(--spacing-xs);
-    cursor: pointer;
-}
-
-.volume-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: var(--orange-primary);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    transition: all var(--transition-fast);
-}
-
-.volume-slider::-webkit-slider-thumb:hover {
-    background: var(--orange-secondary);
-    transform: scale(1.1);
-}
-
-.volume-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: var(--orange-primary);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.difficulty-select {
-    width: 100%;
-    padding: var(--spacing-sm);
-    background: var(--bg-primary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-small);
-    color: var(--text-primary);
-    font-family: var(--font-main);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.difficulty-select:focus {
-    outline: none;
-    border-color: var(--orange-primary);
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
-}
-
-.reset-btn {
-    width: 100%;
-    padding: var(--spacing-md);
-    background: linear-gradient(135deg, var(--red-blood), #a00000);
-    border: 2px solid #c00000;
-    border-radius: var(--border-radius-small);
-    color: white;
-    font-family: var(--font-main);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    min-height: 44px;
-}
-
-.reset-btn:hover {
-    background: linear-gradient(135deg, #a00000, var(--red-blood));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(139, 0, 0, 0.4);
-}
-
-.reset-btn:active {
-    transform: translateY(0);
-}
-
-/* ==================== 工具按鈕 ==================== */
-
-.utility-buttons {
-    position: fixed;
-    top: var(--spacing-lg);
-    right: var(--spacing-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    z-index: var(--z-fixed);
-}
-
-.utility-btn {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-    border: 2px solid var(--border-color);
-    border-radius: 50%;
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-medium);
-}
-
-.utility-btn:hover {
-    background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
-    border-color: var(--orange-secondary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-}
-
-.utility-btn:active {
-    transform: translateY(0);
-}
-
-.utility-btn:focus {
-    outline: 3px solid var(--orange-primary);
-    outline-offset: 2px;
-}
-
-/* ==================== 響應式設計 ==================== */
-
-@media (max-width: 1200px) {
-    .game-container {
-        grid-template-columns: 1fr 250px;
-    }
-}
-
-@media (max-width: 992px) {
-    .game-container {
-        grid-template-areas:
-            "header"
-            "main"
-            "sidebar";
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-    }
-    
-    .game-sidebar {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-    
-    .quick-actions {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    .utility-buttons {
-        flex-direction: row;
-        top: auto;
-        bottom: var(--spacing-lg);
-        right: var(--spacing-lg);
-    }
-}
-
-@media (max-width: 768px) {
-    :root {
-        --spacing-xs: 0.2rem;
-        --spacing-sm: 0.4rem;
-        --spacing-md: 0.8rem;
-        --spacing-lg: 1.2rem;
-        --spacing-xl: 1.6rem;
-    }
-    
-    .game-container {
-        padding: var(--spacing-sm);
-        gap: var(--spacing-sm);
-    }
-    
-    .title-main {
-        font-size: 2rem;
-    }
-    
-    .title-sub {
-        font-size: 1rem;
-    }
-    
-    .game-status {
-        gap: var(--spacing-sm);
-    }
-    
-    .status-item {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        font-size: 0.9rem;
-    }
-    
-    .settings-content {
-        width: 95%;
-        max-height: 90vh;
-    }
-    
-    .utility-buttons {
-        bottom: var(--spacing-sm);
-        right: var(--spacing-sm);
-    }
-    
-    .utility-btn {
-        width: 44px;
-        height: 44px;
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .game-container {
-        height: 100vh;
-        padding: var(--spacing-xs);
-    }
-    
-    .title-main {
-        font-size: 1.5rem;
-    }
-    
-    .game-status {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .status-item {
-        justify-content: center;
-    }
-    
-    .input-wrapper {
-        flex-direction: column;
-    }
-    
-    .send-button {
-        width: 100%;
-    }
-    
-    .quick-actions {
-        flex-direction: column;
-    }
-}
-
-/* ==================== 無障礙與可用性增強 ==================== */
-
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-@media (prefers-contrast: high) {
-    :root {
-        --border-color: #ffffff;
-        --border-accent: #ffffff;
-        --text-secondary: #ffffff;
-        --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.8);
-    }
-}
-
-/* 焦點指示器增強 */
-*:focus-visible {
-    outline: 3px solid var(--orange-primary);
-    outline-offset: 2px;
-}
-
-/* 選擇文字樣式 */
-::selection {
-    background: rgba(255, 107, 53, 0.3);
-    color: var(--text-primary);
-}
-
-::-moz-selection {
-    background: rgba(255, 107, 53, 0.3);
-    color: var(--text-primary);
-}
-
-/* ==================== 列印樣式 ==================== */
-
-@media print {
-    body {
-        background: white !important;
-        color: black !important;
-    }
-    
-    .utility-buttons,
-    .settings-panel,
-    .loading-screen {
-        display: none !important;
-    }
-    
-    .game-container {
-        display: block !important;
-        height: auto !important;
-        padding: 0 !important;
-    }
-    
-    .game-log {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-    }
-}
-
-/* ==================== 動畫效果庫 ==================== */
-
-@media (prefers-reduced-motion: no-preference) {
-    .fade-in {
-        animation: fadeIn 0.5s ease-out;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    .slide-in-left {
-        animation: slideInLeft 0.5s ease-out;
-    }
-    
-    @keyframes slideInLeft {
-        from {
-            transform: translateX(-100%);
-            opacity: 0;
+    if (elements.sendBtn) {
+      elements.sendBtn.addEventListener('click', () => {
+        const input = elements.input.value.trim();
+        if (input) {
+          gameLogic.processInput(input);
+          elements.input.value = '';
         }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+      });
     }
-    
-    .slide-in-right {
-        animation: slideInRight 0.5s ease-out;
+
+    // 快速按鈕
+    if (elements.hintBtn) {
+      elements.hintBtn.addEventListener('click', () => {
+        gameLogic.processInput('/hint');
+      });
     }
-    
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+
+    if (elements.statusBtn) {
+      elements.statusBtn.addEventListener('click', () => {
+        gameLogic.processInput('/status');
+      });
     }
-    
-    .bounce-in {
-        animation: bounceIn 0.6s ease-out;
+
+    if (elements.saveBtn) {
+      elements.saveBtn.addEventListener('click', () => {
+        gameLogic.processInput('/save');
+      });
     }
-    
-    @keyframes bounceIn {
-        0% {
-            transform: scale(0.3);
-            opacity: 0;
-        }
-        50% {
-            transform: scale(1.05);
-        }
-        70% {
-            transform: scale(0.9);
-        }
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
+
+    if (elements.loadBtn) {
+      elements.loadBtn.addEventListener('click', () => {
+        gameLogic.processInput('/load');
+      });
     }
-    
-    .pulse {
-        animation: pulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
-            opacity: 1;
+
+    // 設定面板
+    if (elements.settingsBtn) {
+      elements.settingsBtn.addEventListener('click', () => {
+        if (elements.settingsPanel) {
+          elements.settingsPanel.style.display = 'flex';
         }
-        50% {
-            transform: scale(1.05);
-            opacity: 0.8;
+      });
+    }
+
+    if (elements.closeSettings) {
+      elements.closeSettings.addEventListener('click', () => {
+        if (elements.settingsPanel) {
+          elements.settingsPanel.style.display = 'none';
         }
+      });
     }
-}
 
-/* ==================== 特殊效果 ==================== */
-
-.glow-effect {
-    box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
-    transition: box-shadow var(--transition-medium);
-}
-
-.glow-effect:hover {
-    box-shadow: 0 0 30px rgba(255, 107, 53, 0.8);
-}
-
-.text-glow {
-    text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
-}
-
-.halloween-gradient {
-    background: linear-gradient(135deg, var(--orange-primary), var(--purple-primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* ==================== 遊戲特定樣式 ==================== */
-
-.mystery-text {
-    font-family: var(--font-mono);
-    background: rgba(0, 0, 0, 0.8);
-    color: var(--text-success);
-    padding: var(--spacing-sm);
-    border-radius: var(--border-radius-small);
-    border-left: 4px solid var(--text-success);
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.spooky-border {
-    border: 2px dashed var(--orange-primary);
-    border-radius: var(--border-radius);
-    position: relative;
-    overflow: hidden;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .spooky-border::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -100%;
-        width: 100%;
-        height: calc(100% + 4px);
-        background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.3), transparent);
-        animation: spookyGlow 3s ease-in-out infinite;
+    // 音效設定
+    if (elements.soundToggle) {
+      elements.soundToggle.addEventListener('change', (e) => {
+        gameState.settings.soundEnabled = e.target.checked;
+        utils.saveToStorage(GAME_CONSTANTS.SETTINGS_KEY, gameState.settings);
+      });
     }
-    
-    @keyframes spookyGlow {
-        0% { left: -100%; }
-        100% { left: 100%; }
+
+    if (elements.musicToggle) {
+      elements.musicToggle.addEventListener('change', (e) => {
+        gameState.settings.musicEnabled = e.target.checked;
+        if (e.target.checked) {
+          audioManager.playMusic();
+        } else {
+          audioManager.stopMusic();
+        }
+        utils.saveToStorage(GAME_CONSTANTS.SETTINGS_KEY, gameState.settings);
+      });
     }
-}
 
-.blood-drip {
-    position: relative;
-}
+    if (elements.volumeSlider) {
+      elements.volumeSlider.addEventListener('input', (e) => {
+        const volume = parseInt(e.target.value);
+        audioManager.setVolume(volume);
+        if (elements.volumeValue) {
+          elements.volumeValue.textContent = volume;
+        }
+        utils.saveToStorage(GAME_CONSTANTS.SETTINGS_KEY, gameState.settings);
+      });
+    }
 
-.blood-drip::after {
-    content: '🩸';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.8rem;
-    opacity: 0.7;
-}
+    // 重置遊戲
+    if (elements.resetGame) {
+      elements.resetGame.addEventListener('click', () => {
+        if (confirm('確定要重置遊戲嗎？所有進度將會丟失！')) {
+          gameLogic.resetGame();
+        }
+      });
+    }
 
-/* ==================== 結束標記 ==================== */
+    // 全螢幕按鈕
+    if (elements.fullscreenBtn) {
+      elements.fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.warn('無法進入全螢幕模式:', err);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      });
+    }
+  };
 
-/* CSS 檔案結束 - 所有樣式已完整定義 */
+  // 初始化遊戲
+  const initGame = async () => {
+    console.log('初始化遊戲...');
+
+    // 載入設定
+    const savedSettings = utils.loadFromStorage(GAME_CONSTANTS.SETTINGS_KEY);
+    if (savedSettings) {
+      gameState.settings = { ...gameState.settings, ...savedSettings };
+    }
+
+    // 設置事件監聽器
+    setupEventListeners();
+
+    // 載入故事數據
+    const dataLoaded = await gameLogic.loadStoryData();
+    if (!dataLoaded) {
+      return;
+    }
+
+    // 初始化 UI
+    ui.updateStatus();
+    ui.updateCluesList();
+    achievementSystem.updateAchievementsUI();
+
+    // 應用設定
+    if (elements.soundToggle) {
+      elements.soundToggle.checked = gameState.settings.soundEnabled;
+    }
+    if (elements.musicToggle) {
+      elements.musicToggle.checked = gameState.settings.musicEnabled;
+    }
+    if (elements.volumeSlider) {
+      elements.volumeSlider.value = gameState.settings.volume;
+    }
+    if (elements.volumeValue) {
+      elements.volumeValue.textContent = gameState.settings.volume;
+    }
+
+    // 開始背景音樂
+    if (gameState.settings.musicEnabled) {
+      audioManager.playMusic();
+    }
+
+    // 顯示歡迎訊息
+    gameLogic.addMessage('🎭 歡迎來到萬聖夜驚變：化裝舞會謎案！', 'system-message');
+    gameLogic.addMessage('輸入 `/start` 開始你的推理之旅', 'system-message');
+
+    isGameLoaded = true;
+    console.log('遊戲初始化完成');
+  };
+
+  // 當 DOM 載入完成後初始化遊戲
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGame);
+  } else {
+    initGame();
+  }
+
+})();
