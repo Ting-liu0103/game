@@ -268,3 +268,315 @@
         <div id="achievements-list" class="achievements-list" role="list">
           <div class="no-achievements" role="listitem">尚未解鎖任何成就...</div>
         </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- 設定面板 -->
+  <div id="settings-panel" class="settings-panel hidden" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+    <div class="settings-content">
+      <header class="settings-header">
+        <h2 id="settings-title">遊戲設定</h2>
+        <button id="close-settings" class="close-btn" type="button" aria-label="關閉設定面板">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </header>
+      
+      <form class="settings-form" role="form">
+        <fieldset class="setting-group">
+          <legend>音效設定</legend>
+          
+          <label class="setting-label">
+            <input type="checkbox" id="sound-toggle" checked aria-describedby="sound-help">
+            <span class="checkmark" aria-hidden="true"></span>
+            <span class="label-text">音效</span>
+          </label>
+          <div id="sound-help" class="setting-help">開啟或關閉遊戲音效</div>
+          
+          <label class="setting-label">
+            <input type="checkbox" id="music-toggle" checked aria-describedby="music-help">
+            <span class="checkmark" aria-hidden="true"></span>
+            <span class="label-text">背景音樂</span>
+          </label>
+          <div id="music-help" class="setting-help">開啟或關閉背景音樂</div>
+          
+          <label class="setting-label">
+            <span class="label-text">音量: <span id="volume-value" aria-live="polite">70</span>%</span>
+            <input type="range" id="volume-slider" min="0" max="100" value="70" step="5" 
+                   aria-label="調整音量" aria-describedby="volume-help">
+          </label>
+          <div id="volume-help" class="setting-help">調整整體音量大小</div>
+        </fieldset>
+        
+        <fieldset class="setting-group">
+          <legend>遊戲設定</legend>
+          
+          <label class="setting-label">
+            <span class="label-text">難度</span>
+            <select id="difficulty-select" aria-describedby="difficulty-help">
+              <option value="easy">簡單 - 更多提示，較少錯誤懲罰</option>
+              <option value="normal" selected>普通 - 標準遊戲體驗</option>
+              <option value="hard">困難 - 更少提示，更多挑戰</option>
+            </select>
+          </label>
+          <div id="difficulty-help" class="setting-help">選擇適合的遊戲難度</div>
+          
+          <label class="setting-label">
+            <input type="checkbox" id="auto-save-toggle" checked aria-describedby="autosave-help">
+            <span class="checkmark" aria-hidden="true"></span>
+            <span class="label-text">自動保存</span>
+          </label>
+          <div id="autosave-help" class="setting-help">每完成一關自動保存進度</div>
+        </fieldset>
+        
+        <fieldset class="setting-group">
+          <legend>顯示設定</legend>
+          
+          <label class="setting-label">
+            <input type="checkbox" id="high-contrast-toggle" aria-describedby="contrast-help">
+            <span class="checkmark" aria-hidden="true"></span>
+            <span class="label-text">高對比模式</span>
+          </label>
+          <div id="contrast-help" class="setting-help">提高文字和背景的對比度</div>
+          
+          <label class="setting-label">
+            <span class="label-text">文字大小</span>
+            <select id="font-size-select" aria-describedby="fontsize-help">
+              <option value="small">小</option>
+              <option value="normal" selected>標準</option>
+              <option value="large">大</option>
+              <option value="extra-large">特大</option>
+            </select>
+          </label>
+          <div id="fontsize-help" class="setting-help">調整遊戲文字大小</div>
+        </fieldset>
+      </form>
+      
+      <div class="settings-actions">
+        <button id="reset-game" class="settings-btn danger" type="button" aria-describedby="reset-help">
+          重置遊戲
+        </button>
+        <div id="reset-help" class="setting-help">清除所有進度和設定，重新開始遊戲</div>
+        
+        <button id="export-save" class="settings-btn" type="button" aria-describedby="export-help">
+          匯出存檔
+        </button>
+        <div id="export-help" class="setting-help">將遊戲進度匯出為檔案</div>
+        
+        <button id="import-save" class="settings-btn" type="button" aria-describedby="import-help">
+          匯入存檔
+        </button>
+        <div id="import-help" class="setting-help">從檔案匯入遊戲進度</div>
+        <input type="file" id="save-file-input" accept=".json" style="display: none;" aria-label="選擇存檔檔案">
+      </div>
+    </div>
+  </div>
+
+  <!-- 成就通知 -->
+  <div id="achievement-notification" class="achievement-notification hidden" role="alert" aria-live="assertive">
+    <div class="achievement-content">
+      <div class="achievement-icon" aria-hidden="true">🏆</div>
+      <div class="achievement-text">
+        <div class="achievement-title">成就解鎖！</div>
+        <div class="achievement-description"></div>
+      </div>
+      <button class="achievement-close" type="button" aria-label="關閉成就通知">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 確認對話框 -->
+  <div id="confirm-dialog" class="confirm-dialog hidden" role="dialog" aria-labelledby="dialog-title" aria-describedby="dialog-message" aria-modal="true">
+    <div class="dialog-backdrop" aria-hidden="true"></div>
+    <div class="dialog-content">
+      <h3 id="dialog-title" class="dialog-title">確認操作</h3>
+      <p id="dialog-message" class="dialog-message"></p>
+      <div class="dialog-actions">
+        <button id="confirm-yes" class="dialog-btn primary" type="button">確認</button>
+        <button id="confirm-no" class="dialog-btn" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 幫助面板 -->
+  <div id="help-panel" class="help-panel hidden" role="dialog" aria-labelledby="help-title" aria-modal="true">
+    <div class="help-content">
+      <header class="help-header">
+        <h2 id="help-title">遊戲說明</h2>
+        <button id="close-help" class="close-btn" type="button" aria-label="關閉說明面板">
+          <span aria-hidden="true">✕</span>
+        </button>
+      </header>
+      
+      <div class="help-sections">
+        <section class="help-section">
+          <h3>基本操作</h3>
+          <ul>
+            <li><strong>/start</strong> - 開始遊戲</li>
+            <li><strong>/hint</strong> - 獲取當前關卡提示</li>
+            <li><strong>/status</strong> - 查看詳細狀態</li>
+            <li><strong>/save</strong> - 保存遊戲進度</li>
+            <li><strong>/load</strong> - 載入遊戲進度</li>
+          </ul>
+        </section>
+        
+        <section class="help-section">
+          <h3>調查指令</h3>
+          <ul>
+            <li><strong>檢查 [物品]</strong> - 仔細檢查特定物品</li>
+            <li><strong>調查 [地點]</strong> - 深入調查某個地點</li>
+            <li><strong>分析 [線索]</strong> - 分析已收集的線索</li>
+            <li><strong>對話 [角色]</strong> - 與角色進行對話</li>
+          </ul>
+        </section>
+        
+        <section class="help-section">
+          <h3>遊戲技巧</h3>
+          <ul>
+            <li>仔細閱讀每個場景的描述</li>
+            <li>收集所有線索以解鎖隱藏劇情</li>
+            <li>注意角色證詞中的矛盾之處</li>
+            <li>善用提示系統，但要節約使用</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮動按鈕 -->
+  <div class="floating-buttons">
+    <button id="settings-btn" class="floating-btn settings-btn" type="button" aria-label="開啟遊戲設定">
+      <span class="btn-icon" aria-hidden="true">⚙️</span>
+    </button>
+
+    <button id="help-btn" class="floating-btn help-btn" type="button" aria-label="開啟遊戲說明">
+      <span class="btn-icon" aria-hidden="true">❓</span>
+    </button>
+
+    <button id="fullscreen-btn" class="floating-btn fullscreen-btn" type="button" aria-label="切換全螢幕模式">
+      <span class="btn-icon" aria-hidden="true">⛶</span>
+    </button>
+
+    <button id="theme-toggle" class="floating-btn theme-btn" type="button" aria-label="切換深色/淺色主題">
+      <span class="btn-icon" aria-hidden="true">🌙</span>
+    </button>
+  </div>
+
+  <!-- 音效檔案 -->
+  <audio id="thunder-sound" preload="metadata" aria-label="雷聲音效">
+    <source src="assets/sounds/thunder.mp3" type="audio/mpeg">
+    <source src="assets/sounds/thunder.ogg" type="audio/ogg">
+    <source src="assets/sounds/thunder.wav" type="audio/wav">
+    您的瀏覽器不支援音效播放
+  </audio>
+  
+  <audio id="ambient-sound" preload="metadata" loop aria-label="環境音樂">
+    <source src="assets/sounds/ambient.mp3" type="audio/mpeg">
+    <source src="assets/sounds/ambient.ogg" type="audio/ogg">
+    您的瀏覽器不支援音效播放
+  </audio>
+  
+  <audio id="success-sound" preload="metadata" aria-label="成功音效">
+    <source src="assets/sounds/success.mp3" type="audio/mpeg">
+    <source src="assets/sounds/success.ogg" type="audio/ogg">
+    您的瀏覽器不支援音效播放
+  </audio>
+  
+  <audio id="error-sound" preload="metadata" aria-label="錯誤音效">
+    <source src="assets/sounds/error.mp3" type="audio/mpeg">
+    <source src="assets/sounds/error.ogg" type="audio/ogg">
+    您的瀏覽器不支援音效播放
+  </audio>
+
+
+  <!-- 無 JavaScript 時的提示 -->
+  <noscript>
+    <div class="noscript-warning">
+      <h2>需要啟用 JavaScript</h2>
+      <p>此遊戲需要 JavaScript 才能正常運作。請在瀏覽器設定中啟用 JavaScript 後重新載入頁面。</p>
+    </div>
+  </noscript>
+
+  <!-- 載入關鍵 JavaScript -->
+  <script>
+    // 關鍵路徑 JavaScript - 立即執行
+    (function() {
+      // 檢測瀏覽器功能
+      const features = {
+        localStorage: typeof Storage !== 'undefined',
+        audioContext: typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined',
+        webGL: !!window.WebGLRenderingContext,
+        serviceWorker: 'serviceWorker' in navigator
+      };
+      
+      // 設定全域變數
+      window.gameFeatures = features;
+      window.gameStartTime = Date.now();
+      
+      // 預載入關鍵資源
+      if (features.localStorage) {
+        try {
+          const savedTheme = localStorage.getItem('halloween_theme') || 'dark';
+          document.body.setAttribute('data-theme', savedTheme);
+        } catch (e) {
+          console.warn('無法讀取主題設定:', e);
+        }
+      }
+      
+      // 設定錯誤處理
+      window.addEventListener('error', function(e) {
+        console.error('遊戲錯誤:', e.error);
+        // 可以在這裡添加錯誤回報邏輯
+      });
+      
+      // 設定未處理的 Promise 拒絕
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('未處理的 Promise 拒絕:', e.reason);
+        e.preventDefault();
+      });
+    })();
+  </script>
+
+  <!-- 主要遊戲邏輯 -->
+  <script src="scripts/app.js" defer></script>
+  
+  <!-- Service Worker 註冊 -->
+  <script>
+    // Service Worker 註冊（非關鍵路徑）
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('Service Worker 註冊成功:', registration.scope);
+            
+            // 檢查更新
+            registration.addEventListener('updatefound', function() {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // 有新版本可用
+                  if (confirm('遊戲有新版本可用，是否重新載入？')) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(function(error) {
+            console.log('Service Worker 註冊失敗:', error);
+          });
+      });
+    }
+  </script>
+
+  <!-- 分析代碼（可選） -->
+  <script>
+    // Google Analytics 或其他分析工具
+    // 只在生產環境載入
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      // 在這裡添加分析代碼
+    }
+  </script>
+</body>
+</html>
