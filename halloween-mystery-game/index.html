@@ -1,530 +1,421 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" prefix="og: http://ogp.me/ns#">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>萬聖夜驚變：化裝舞會謎案 - 沉浸式推理解謎遊戲</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>萬聖夜驚變：化裝舞會謎案</title>
   
-  <!-- SEO 優化元數據 -->
-  <meta name="description" content="體驗驚心動魄的萬聖節推理解謎遊戲，在神秘的莊園化裝舞會中揭開隱藏的真相。多重結局、豐富線索、沉浸式體驗等你來挑戰！">
-  <meta name="keywords" content="萬聖節遊戲,推理遊戲,解謎遊戲,化裝舞會,懸疑推理,互動小說,文字冒險,萬聖夜,恐怖遊戲">
-  <meta name="author" content="萬聖夜驚變製作團隊">
-  <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#1a0d00">
-  <meta name="color-scheme" content="dark light">
-  
-  <!-- Open Graph 元數據 -->
-  <meta property="og:title" content="萬聖夜驚變：化裝舞會謎案">
-  <meta property="og:description" content="體驗驚心動魄的萬聖節推理解謎遊戲，在神秘的莊園化裝舞會中揭開隱藏的真相">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://halloween-mystery.game">
-  <meta property="og:image" content="assets/images/og-image.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="zh_TW">
-  <meta property="og:site_name" content="萬聖夜驚變">
-  
-  <!-- Twitter Card 元數據 -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="萬聖夜驚變：化裝舞會謎案">
-  <meta name="twitter:description" content="體驗驚心動魄的萬聖節推理解謎遊戲">
-  <meta name="twitter:image" content="assets/images/twitter-card.jpg">
-  
-  <!-- 結構化數據 -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Game",
-    "name": "萬聖夜驚變：化裝舞會謎案",
-    "description": "體驗驚心動魄的萬聖節推理解謎遊戲，在神秘的莊園化裝舞會中揭開隱藏的真相",
-    "genre": ["推理", "解謎", "恐怖", "互動小說"],
-    "gamePlatform": "Web Browser",
-    "applicationCategory": "Game",
-    "operatingSystem": "Any",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "TWD"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "156"
-    }
-  }
-  </script>
-  
-  <!-- 預載入關鍵資源 -->
+  <!-- 確保字體優先載入 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Creepster&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Creepster&display=swap"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Creepster&display=swap" rel="stylesheet">
   
-  <!-- 遊戲圖標 -->
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
-  <link rel="mask-icon" href="assets/icons/safari-pinned-tab.svg" color="#1a0d00">
+  <!-- 內嵌關鍵 CSS 確保立即載入 -->
+  <style>
+    /* 關鍵路徑 CSS */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+    }
+    
+    body {
+      font-family: 'Noto Serif TC', 'Microsoft JhengHei', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #3a2a1a 100%);
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #0a0a0a 0%, #3a2a1a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+    
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    
+    .loading-content {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(26, 26, 26, 0.95);
+      border-radius: 12px;
+      border: 2px solid #ff6b35;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .pumpkin-loader {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    .loading-content h2 {
+      font-family: 'Creepster', cursive;
+      color: #ff6b35;
+      margin: 0 0 1.5rem 0;
+      font-size: 2rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+    
+    .loading-bar {
+      width: 100%;
+      height: 8px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    
+    .loading-progress {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b35, #ff8c42);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+    
+    .loading-text {
+      color: #cccccc;
+      font-style: italic;
+      margin: 0;
+    }
+    
+    .game-container {
+      display: none;
+      grid-template-areas: 
+        "header header"
+        "main sidebar";
+      grid-template-columns: 1fr 300px;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    
+    .game-container.loaded {
+      display: grid;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+  </style>
   
-  <!-- PWA 支援 -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="萬聖夜驚變">
-  <meta name="msapplication-TileColor" content="#1a0d00">
-  <meta name="msapplication-config" content="browserconfig.xml">
-  
-  <!-- 樣式表 -->
+  <!-- 主要樣式表 -->
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="game-body" data-theme="dark">
-  <!-- 跳過連結（無障礙功能） -->
-  <a href="#main-content" class="skip-link">跳到主要內容</a>
-  
+<body>
   <!-- 載入畫面 -->
-  <div id="loading-screen" class="loading-screen" role="dialog" aria-labelledby="loading-title" aria-describedby="loading-description">
+  <div id="loading-screen" class="loading-screen">
     <div class="loading-content">
-      <div class="pumpkin-loader" aria-hidden="true">🎃</div>
+      <div class="pumpkin-loader">🎃</div>
       <h2 id="loading-title">載入中...</h2>
-      <div class="loading-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-        <div class="loading-progress" style="width: 0%"></div>
+      <div class="loading-bar">
+        <div class="loading-progress" id="loading-progress"></div>
       </div>
-      <p id="loading-description" class="loading-text">正在準備驚悚體驗...</p>
+      <p class="loading-text" id="loading-text">正在準備驚悚體驗...</p>
     </div>
   </div>
 
   <!-- 主遊戲界面 -->
-  <div id="game-container" class="game-container hidden" role="application" aria-label="萬聖夜驚變遊戲">
+  <div id="game-container" class="game-container">
     <!-- 遊戲標題區 -->
-    <header class="game-header" role="banner">
+    <header class="game-header">
       <h1 class="game-title">
         <span class="title-main">萬聖夜驚變</span>
         <span class="title-sub">化裝舞會謎案</span>
       </h1>
       
       <!-- 遊戲狀態顯示 -->
-      <div class="game-status" role="status" aria-live="polite">
+      <div class="game-status">
         <div class="status-item">
-          <span class="status-icon" aria-hidden="true">🏠</span>
-          <span id="current-location" aria-label="當前位置">準備開始</span>
+          <span class="status-icon">🏠</span>
+          <span id="current-location">準備開始</span>
         </div>
         <div class="status-item">
-          <span class="status-icon" aria-hidden="true">🔍</span>
-          <span id="clues-count" aria-label="收集線索數量">線索: 0/4</span>
+          <span class="status-icon">🔍</span>
+          <span id="clues-count">線索: 0/4</span>
         </div>
         <div class="status-item">
-          <span class="status-icon" aria-hidden="true">💡</span>
-          <span id="hints-remaining" aria-label="剩餘提示次數">提示: 3/3</span>
+          <span class="status-icon">💡</span>
+          <span id="hints-remaining">提示: 3/3</span>
         </div>
         <div class="status-item">
-          <span class="status-icon" aria-hidden="true">🎯</span>
-          <span id="score-display" aria-label="當前分數">分數: 0</span>
+          <span class="status-icon">🎯</span>
+          <span id="score-display">分數: 0</span>
         </div>
       </div>
     </header>
 
     <!-- 主要遊戲區域 -->
-    <main id="main-content" class="game-main" role="main">
+    <main class="game-main">
       <!-- 遊戲日誌區 -->
-      <section class="log-container" aria-labelledby="log-title">
-        <h2 id="log-title" class="visually-hidden">遊戲日誌</h2>
-        <div id="log" class="game-log" role="log" aria-live="polite" aria-atomic="false" tabindex="0"></div>
+      <section class="log-container">
+        <div id="log" class="game-log"></div>
         
         <!-- 快速動作按鈕 -->
-        <div class="quick-actions" role="toolbar" aria-label="快速動作">
-          <button id="hint-btn" class="quick-btn" type="button" aria-describedby="hint-tooltip">
-            <span class="btn-icon" aria-hidden="true">💡</span>
+        <div class="quick-actions">
+          <button id="hint-btn" class="quick-btn">
+            <span class="btn-icon">💡</span>
             <span class="btn-text">提示</span>
           </button>
-          <div id="hint-tooltip" class="tooltip" role="tooltip">獲取當前關卡的提示</div>
           
-          <button id="status-btn" class="quick-btn" type="button" aria-describedby="status-tooltip">
-            <span class="btn-icon" aria-hidden="true">📊</span>
+          <button id="status-btn" class="quick-btn">
+            <span class="btn-icon">📊</span>
             <span class="btn-text">狀態</span>
           </button>
-          <div id="status-tooltip" class="tooltip" role="tooltip">查看詳細遊戲狀態</div>
           
-          <button id="save-btn" class="quick-btn" type="button" aria-describedby="save-tooltip">
-            <span class="btn-icon" aria-hidden="true">💾</span>
+          <button id="save-btn" class="quick-btn">
+            <span class="btn-icon">💾</span>
             <span class="btn-text">保存</span>
           </button>
-          <div id="save-tooltip" class="tooltip" role="tooltip">保存當前遊戲進度</div>
           
-          <button id="load-btn" class="quick-btn" type="button" aria-describedby="load-tooltip">
-            <span class="btn-icon" aria-hidden="true">📂</span>
+          <button id="load-btn" class="quick-btn">
+            <span class="btn-icon">📂</span>
             <span class="btn-text">載入</span>
           </button>
-          <div id="load-tooltip" class="tooltip" role="tooltip">載入已保存的遊戲</div>
         </div>
       </section>
 
       <!-- 輸入區域 -->
-      <section class="input-container" aria-labelledby="input-title">
-        <h2 id="input-title" class="visually-hidden">遊戲輸入</h2>
+      <section class="input-container">
         <div class="input-wrapper">
-          <label for="input" class="visually-hidden">輸入遊戲指令或調查內容</label>
           <input 
             id="input" 
             type="text"
             class="game-input" 
             placeholder="輸入指令或調查內容..." 
             autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            maxlength="100"
-            aria-label="遊戲輸入框"
-            aria-describedby="input-help"
-            role="textbox"
           />
-          <div id="input-help" class="visually-hidden">
-            輸入文字進行調查，或使用斜線開頭的指令如 /start、/hint、/status
-          </div>
           
-          <button id="send" class="send-btn" type="button" aria-label="送出指令">
-            <span class="send-icon" aria-hidden="true">➤</span>
+          <button id="send" class="send-btn">
+            <span class="send-icon">➤</span>
           </button>
         </div>
         
         <!-- 輸入建議 -->
-        <div id="input-suggestions" class="input-suggestions hidden" role="listbox" aria-label="輸入建議">
-          <!-- 動態生成建議項目 -->
-        </div>
+        <div id="input-suggestions" class="input-suggestions hidden"></div>
       </section>
     </main>
 
     <!-- 側邊欄 -->
-    <aside class="game-sidebar" role="complementary" aria-label="遊戲資訊面板">
+    <aside class="game-sidebar">
       <!-- 角色資訊 -->
-      <section class="character-panel" aria-labelledby="characters-title">
-        <h3 id="characters-title">主要角色</h3>
-        <div class="character-list" role="list">
-          <div class="character-item" data-character="charles" role="listitem">
-            <div class="character-avatar" aria-hidden="true">👤</div>
+      <section class="character-panel">
+        <h3>主要角色</h3>
+        <div class="character-list">
+          <div class="character-item">
+            <div class="character-avatar">👤</div>
             <div class="character-info">
               <div class="character-name">Charles Whitmore</div>
-              <div class="character-status" aria-label="角色狀態">可疑</div>
+              <div class="character-status">可疑</div>
             </div>
           </div>
-          <div class="character-item" data-character="victoria" role="listitem">
-            <div class="character-avatar" aria-hidden="true">👩</div>
+          <div class="character-item">
+            <div class="character-avatar">👩</div>
             <div class="character-info">
               <div class="character-name">Victoria Sterling</div>
-              <div class="character-status" aria-label="角色狀態">受害者</div>
+              <div class="character-status">受害者</div>
             </div>
           </div>
-          <div class="character-item" data-character="edward" role="listitem">
-            <div class="character-avatar" aria-hidden="true">🧔</div>
+          <div class="character-item">
+            <div class="character-avatar">🧔</div>
             <div class="character-info">
               <div class="character-name">Edward Lancaster</div>
-              <div class="character-status" aria-label="角色狀態">無辜</div>
+              <div class="character-status">無辜</div>
             </div>
           </div>
-          <div class="character-item" data-character="mysterious" role="listitem">
-            <div class="character-avatar" aria-hidden="true">🎭</div>
+          <div class="character-item">
+            <div class="character-avatar">🎭</div>
             <div class="character-info">
               <div class="character-name">神秘賓客</div>
-              <div class="character-status" aria-label="角色狀態">未知</div>
+              <div class="character-status">未知</div>
             </div>
           </div>
         </div>
       </section>
 
       <!-- 收集的線索 -->
-      <section class="clues-panel" aria-labelledby="clues-title">
-        <h3 id="clues-title">收集的線索</h3>
-        <div id="clues-list" class="clues-list" role="list" aria-live="polite">
-          <div class="no-clues" role="listitem">尚未發現線索...</div>
+      <section class="clues-panel">
+        <h3>收集的線索</h3>
+        <div id="clues-list" class="clues-list">
+          <div class="no-clues">尚未發現線索...</div>
         </div>
       </section>
 
       <!-- 遊戲進度 -->
-      <section class="progress-panel" aria-labelledby="progress-title">
-        <h3 id="progress-title">調查進度</h3>
-        <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-describedby="progress-description">
+      <section class="progress-panel">
+        <h3>調查進度</h3>
+        <div class="progress-bar">
           <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
         </div>
-        <div id="progress-description" class="progress-text">
+        <div class="progress-text">
           第 <span id="progress-current">0</span> 關 / 共 <span id="progress-total">7</span> 關
         </div>
       </section>
 
       <!-- 成就系統 -->
-      <section class="achievements-panel" aria-labelledby="achievements-title">
-        <h3 id="achievements-title">解鎖成就</h3>
-        <div id="achievements-list" class="achievements-list" role="list">
-          <div class="no-achievements" role="listitem">尚未解鎖任何成就...</div>
+      <section class="achievements-panel">
+        <h3>解鎖成就</h3>
+        <div id="achievements-list" class="achievements-list">
+          <div class="no-achievements">尚未解鎖任何成就...</div>
         </div>
       </section>
     </aside>
   </div>
 
   <!-- 設定面板 -->
-  <div id="settings-panel" class="settings-panel hidden" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+  <div id="settings-panel" class="settings-panel hidden">
     <div class="settings-content">
       <header class="settings-header">
-        <h2 id="settings-title">遊戲設定</h2>
-        <button id="close-settings" class="close-btn" type="button" aria-label="關閉設定面板">
-          <span aria-hidden="true">✕</span>
-        </button>
+        <h2>遊戲設定</h2>
+        <button id="close-settings" class="close-btn">✕</button>
       </header>
       
-      <form class="settings-form" role="form">
-        <fieldset class="setting-group">
-          <legend>音效設定</legend>
+      <div class="settings-form">
+        <div class="setting-group">
+          <h3>音效設定</h3>
           
           <label class="setting-label">
-            <input type="checkbox" id="sound-toggle" checked aria-describedby="sound-help">
-            <span class="checkmark" aria-hidden="true"></span>
+            <input type="checkbox" id="sound-toggle" checked>
             <span class="label-text">音效</span>
           </label>
-          <div id="sound-help" class="setting-help">開啟或關閉遊戲音效</div>
           
           <label class="setting-label">
-            <input type="checkbox" id="music-toggle" checked aria-describedby="music-help">
-            <span class="checkmark" aria-hidden="true"></span>
+            <input type="checkbox" id="music-toggle" checked>
             <span class="label-text">背景音樂</span>
           </label>
-          <div id="music-help" class="setting-help">開啟或關閉背景音樂</div>
           
           <label class="setting-label">
-            <span class="label-text">音量: <span id="volume-value" aria-live="polite">70</span>%</span>
-            <input type="range" id="volume-slider" min="0" max="100" value="70" step="5" 
-                   aria-label="調整音量" aria-describedby="volume-help">
+            <span class="label-text">音量: <span id="volume-value">70</span>%</span>
+            <input type="range" id="volume-slider" min="0" max="100" value="70">
           </label>
-          <div id="volume-help" class="setting-help">調整整體音量大小</div>
-        </fieldset>
+        </div>
         
-        <fieldset class="setting-group">
-          <legend>遊戲設定</legend>
+        <div class="setting-group">
+          <h3>遊戲設定</h3>
           
           <label class="setting-label">
             <span class="label-text">難度</span>
-            <select id="difficulty-select" aria-describedby="difficulty-help">
-              <option value="easy">簡單 - 更多提示，較少錯誤懲罰</option>
-              <option value="normal" selected>普通 - 標準遊戲體驗</option>
-              <option value="hard">困難 - 更少提示，更多挑戰</option>
+            <select id="difficulty-select">
+              <option value="easy">簡單</option>
+              <option value="normal" selected>普通</option>
+              <option value="hard">困難</option>
             </select>
           </label>
-          <div id="difficulty-help" class="setting-help">選擇適合的遊戲難度</div>
-          
-          <label class="setting-label">
-            <input type="checkbox" id="auto-save-toggle" checked aria-describedby="autosave-help">
-            <span class="checkmark" aria-hidden="true"></span>
-            <span class="label-text">自動保存</span>
-          </label>
-          <div id="autosave-help" class="setting-help">每完成一關自動保存進度</div>
-        </fieldset>
-        
-        <fieldset class="setting-group">
-          <legend>顯示設定</legend>
-          
-          <label class="setting-label">
-            <input type="checkbox" id="high-contrast-toggle" aria-describedby="contrast-help">
-            <span class="checkmark" aria-hidden="true"></span>
-            <span class="label-text">高對比模式</span>
-          </label>
-          <div id="contrast-help" class="setting-help">提高文字和背景的對比度</div>
-          
-          <label class="setting-label">
-            <span class="label-text">文字大小</span>
-            <select id="font-size-select" aria-describedby="fontsize-help">
-              <option value="small">小</option>
-              <option value="normal" selected>標準</option>
-              <option value="large">大</option>
-              <option value="extra-large">特大</option>
-            </select>
-          </label>
-          <div id="fontsize-help" class="setting-help">調整遊戲文字大小</div>
-        </fieldset>
-      </form>
+        </div>
+      </div>
       
       <div class="settings-actions">
-        <button id="reset-game" class="settings-btn danger" type="button" aria-describedby="reset-help">
-          重置遊戲
-        </button>
-        <div id="reset-help" class="setting-help">清除所有進度和設定，重新開始遊戲</div>
-        
-        <button id="export-save" class="settings-btn" type="button" aria-describedby="export-help">
-          匯出存檔
-        </button>
-        <div id="export-help" class="setting-help">將遊戲進度匯出為檔案</div>
-        
-        <button id="import-save" class="settings-btn" type="button" aria-describedby="import-help">
-          匯入存檔
-        </button>
-        <div id="import-help" class="setting-help">從檔案匯入遊戲進度</div>
-        <input type="file" id="save-file-input" accept=".json" style="display: none;" aria-label="選擇存檔檔案">
-      </div>
-    </div>
-  </div>
-
-  <!-- 成就通知 -->
-  <div id="achievement-notification" class="achievement-notification hidden" role="alert" aria-live="assertive">
-    <div class="achievement-content">
-      <div class="achievement-icon" aria-hidden="true">🏆</div>
-      <div class="achievement-text">
-        <div class="achievement-title">成就解鎖！</div>
-        <div class="achievement-description"></div>
-      </div>
-      <button class="achievement-close" type="button" aria-label="關閉成就通知">
-        <span aria-hidden="true">✕</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- 確認對話框 -->
-  <div id="confirm-dialog" class="confirm-dialog hidden" role="dialog" aria-labelledby="dialog-title" aria-describedby="dialog-message" aria-modal="true">
-    <div class="dialog-backdrop" aria-hidden="true"></div>
-    <div class="dialog-content">
-      <h3 id="dialog-title" class="dialog-title">確認操作</h3>
-      <p id="dialog-message" class="dialog-message"></p>
-      <div class="dialog-actions">
-        <button id="confirm-yes" class="dialog-btn primary" type="button">確認</button>
-        <button id="confirm-no" class="dialog-btn" type="button">取消</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 幫助面板 -->
-  <div id="help-panel" class="help-panel hidden" role="dialog" aria-labelledby="help-title" aria-modal="true">
-    <div class="help-content">
-      <header class="help-header">
-        <h2 id="help-title">遊戲說明</h2>
-        <button id="close-help" class="close-btn" type="button" aria-label="關閉說明面板">
-          <span aria-hidden="true">✕</span>
-        </button>
-      </header>
-      
-      <div class="help-sections">
-        <section class="help-section">
-          <h3>基本操作</h3>
-          <ul>
-            <li><strong>/start</strong> - 開始遊戲</li>
-            <li><strong>/hint</strong> - 獲取當前關卡提示</li>
-            <li><strong>/status</strong> - 查看詳細狀態</li>
-            <li><strong>/save</strong> - 保存遊戲進度</li>
-            <li><strong>/load</strong> - 載入遊戲進度</li>
-          </ul>
-        </section>
-        
-        <section class="help-section">
-          <h3>調查指令</h3>
-          <ul>
-            <li><strong>檢查 [物品]</strong> - 仔細檢查特定物品</li>
-            <li><strong>調查 [地點]</strong> - 深入調查某個地點</li>
-            <li><strong>分析 [線索]</strong> - 分析已收集的線索</li>
-            <li><strong>對話 [角色]</strong> - 與角色進行對話</li>
-          </ul>
-        </section>
-        
-        <section class="help-section">
-          <h3>遊戲技巧</h3>
-          <ul>
-            <li>仔細閱讀每個場景的描述</li>
-            <li>收集所有線索以解鎖隱藏劇情</li>
-            <li>注意角色證詞中的矛盾之處</li>
-            <li>善用提示系統，但要節約使用</li>
-          </ul>
-        </section>
+        <button id="reset-game" class="settings-btn danger">重置遊戲</button>
       </div>
     </div>
   </div>
 
   <!-- 浮動按鈕 -->
   <div class="floating-buttons">
-    <button id="settings-btn" class="floating-btn settings-btn" type="button" aria-label="開啟遊戲設定">
-      <span class="btn-icon" aria-hidden="true">⚙️</span>
-    </button>
-
-    <button id="help-btn" class="floating-btn help-btn" type="button" aria-label="開啟遊戲說明">
-      <span class="btn-icon" aria-hidden="true">❓</span>
-    </button>
-
-    <button id="fullscreen-btn" class="floating-btn fullscreen-btn" type="button" aria-label="切換全螢幕模式">
-      <span class="btn-icon" aria-hidden="true">⛶</span>
-    </button>
-
-    <button id="theme-toggle" class="floating-btn theme-btn" type="button" aria-label="切換深色/淺色主題">
-      <span class="btn-icon" aria-hidden="true">🌙</span>
-    </button>
+    <button id="settings-btn" class="floating-btn">⚙️</button>
+    <button id="help-btn" class="floating-btn">❓</button>
+    <button id="fullscreen-btn" class="floating-btn">⛶</button>
   </div>
 
   <!-- 音效檔案 -->
-  <audio id="thunder-sound" preload="metadata" aria-label="雷聲音效">
+  <audio id="thunder-sound" preload="metadata">
     <source src="assets/sounds/thunder.mp3" type="audio/mpeg">
-    <source src="assets/sounds/thunder.ogg" type="audio/ogg">
-    <source src="assets/sounds/thunder.wav" type="audio/wav">
-    您的瀏覽器不支援音效播放
   </audio>
   
-  <audio id="ambient-sound" preload="metadata" loop aria-label="環境音樂">
+  <audio id="ambient-sound" preload="metadata" loop>
     <source src="assets/sounds/ambient.mp3" type="audio/mpeg">
-    <source src="assets/sounds/ambient.ogg" type="audio/ogg">
-    您的瀏覽器不支援音效播放
   </audio>
   
-  <audio id="success-sound" preload="metadata" aria-label="成功音效">
+  <audio id="success-sound" preload="metadata">
     <source src="assets/sounds/success.mp3" type="audio/mpeg">
-    <source src="assets/sounds/success.ogg" type="audio/ogg">
-    您的瀏覽器不支援音效播放
   </audio>
   
-  <audio id="error-sound" preload="metadata" aria-label="錯誤音效">
+  <audio id="error-sound" preload="metadata">
     <source src="assets/sounds/error.mp3" type="audio/mpeg">
-    <source src="assets/sounds/error.ogg" type="audio/ogg">
-    您的瀏覽器不支援音效播放
   </audio>
 
-  <!-- 無 JavaScript 時的提示 -->
-  <noscript>
-    <div class="noscript-warning">
-      <h2>需要啟用 JavaScript</h2>
-      <p>此遊戲需要 JavaScript 才能正常運作。請在瀏覽器設定中啟用 JavaScript 後重新載入頁面。</p>
-    </div>
-  </noscript>
-
-  <!-- 載入關鍵 JavaScript -->
+  <!-- JavaScript 載入 -->
   <script>
-    // 關鍵路徑 JavaScript - 立即執行
-    (function() {
-      // 檢測瀏覽器功能
-      const features = {
-        localStorage: typeof Storage !== 'undefined',
-        audioContext: typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined',
-        webGL: !!window.WebGLRenderingContext,
-        serviceWorker: 'serviceWorker' in navigator
-      };
+    // 立即執行的初始化代碼
+    document.addEventListener('DOMContentLoaded', function() {
+      // 模擬載入進度
+      let progress = 0;
+      const progressBar = document.getElementById('loading-progress');
+      const loadingText = document.getElementById('loading-text');
       
-      // 設定全域變數
-      window.gameFeatures = features;
-      window.gameStartTime = Date.now();
+      const loadingMessages = [
+        '正在準備驚悚體驗...',
+        '載入遊戲資源...',
+        '初始化音效系統...',
+        '準備完成！'
+      ];
       
-      // 預載入關鍵資源
-      if (features.localStorage) {
-        try {
-          const savedTheme = localStorage.getItem('halloween_theme') || 'dark';
-          document.body.setAttribute('data-theme', savedTheme);
-        } catch (e) {
-          console.warn('無法讀取主題設定:', e);
+      const interval = setInterval(() => {
+        progress += 25;
+        if (progressBar) {
+          progressBar.style.width = progress + '%';
         }
-      }
-      
-      // 設定錯誤處理
-      window.addEventListener('error', function(e) {
-        console.error('遊戲錯誤:', e.error);
-      });
-      
-      // 設定未處理的 Promise 拒絕
-      window.addEventListener('unhandledrejection', function(e) {
-        console.error('未處理的 Promise 拒絕:', e.reason);
-        e.preventDefault();
-      });
-    })();
+        
+        if (loadingText && loadingMessages[progress / 25 - 1]) {
+          loadingText.textContent = loadingMessages[progress / 25 - 1];
+        }
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          
+          // 延遲顯示遊戲界面
+          setTimeout(() => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const gameContainer = document.getElementById('game-container');
+            
+            if (loadingScreen) {
+              loadingScreen.classList.add('hidden');
+            }
+            
+            if (gameContainer) {
+              gameContainer.classList.add('loaded');
+            }
+            
+            // 顯示歡迎訊息
+            const log = document.getElementById('log');
+            if (log) {
+              log.innerHTML = '<div class="welcome-message">🎃 歡迎來到萬聖夜驚變！輸入 /start 開始遊戲</div>';
+            }
+          }, 500);
+        }
+      }, 800);
+    });
   </script>
-
-  <!-- 主要遊戲邏輯 -->
-  <script src="app.js" defer></script>
+  
+  <script src="app.js"></script>
 </body>
 </html>
