@@ -1,17 +1,292 @@
-// ===== index.html =====
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>萬聖夜驚變</title>
+  <title>萬聖夜驚變：化裝舞會謎案</title>
+  <meta name="description" content="一款沉浸式萬聖節推理解謎遊戲，揭開莊園化裝舞會背後的驚人真相">
+  <meta name="keywords" content="萬聖節,推理遊戲,解謎,化裝舞會,懸疑">
+  
+  <!-- 預載入字體和資源 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Creepster&display=swap" rel="stylesheet">
+  
+  <!-- 遊戲圖標 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  
+  <!-- PWA支援 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a0d00">
+  
+  <!-- 樣式表 -->
   <link rel="stylesheet" href="style.css">
+  
+  <!-- 預載入音效 -->
+  <link rel="preload" href="assets/sounds/thunder.mp3" as="audio">
+  <link rel="preload" href="assets/sounds/ambient.mp3" as="audio">
 </head>
 <body>
-  <div id="log"></div>
-  <input id="input" placeholder="輸入指令或文字..." autocomplete="off" />
-  <button id="send">送出</button>
+  <!-- 載入畫面 -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="pumpkin-loader">🎃</div>
+      <h2>載入中...</h2>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+      <p class="loading-text">正在準備驚悚體驗...</p>
+    </div>
+  </div>
 
+  <!-- 主遊戲界面 -->
+  <div id="game-container" class="game-container hidden">
+    <!-- 遊戲標題區 -->
+    <header class="game-header">
+      <h1 class="game-title">
+        <span class="title-main">萬聖夜驚變</span>
+        <span class="title-sub">化裝舞會謎案</span>
+      </h1>
+      
+      <!-- 遊戲狀態顯示 -->
+      <div class="game-status">
+        <div class="status-item">
+          <span class="status-icon">🏠</span>
+          <span id="current-location">準備開始</span>
+        </div>
+        <div class="status-item">
+          <span class="status-icon">🔍</span>
+          <span id="clues-count">線索: 0/4</span>
+        </div>
+        <div class="status-item">
+          <span class="status-icon">💡</span>
+          <span id="hints-remaining">提示: 3/3</span>
+        </div>
+        <div class="status-item">
+          <span class="status-icon">🎯</span>
+          <span id="score-display">分數: 0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要遊戲區域 -->
+    <main class="game-main">
+      <!-- 遊戲日誌區 -->
+      <div class="log-container">
+        <div id="log" class="game-log" role="log" aria-live="polite"></div>
+        
+        <!-- 快速動作按鈕 -->
+        <div class="quick-actions">
+          <button id="hint-btn" class="quick-btn" title="獲取提示">
+            <span class="btn-icon">💡</span>
+            <span class="btn-text">提示</span>
+          </button>
+          <button id="status-btn" class="quick-btn" title="查看狀態">
+            <span class="btn-icon">📊</span>
+            <span class="btn-text">狀態</span>
+          </button>
+          <button id="save-btn" class="quick-btn" title="保存遊戲">
+            <span class="btn-icon">💾</span>
+            <span class="btn-text">保存</span>
+          </button>
+          <button id="load-btn" class="quick-btn" title="載入遊戲">
+            <span class="btn-icon">📂</span>
+            <span class="btn-text">載入</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 輸入區域 -->
+      <div class="input-container">
+        <div class="input-wrapper">
+          <input 
+            id="input" 
+            type="text"
+            class="game-input" 
+            placeholder="輸入指令或調查內容..." 
+            autocomplete="off"
+            maxlength="100"
+            aria-label="遊戲輸入框"
+          />
+          <button id="send" class="send-btn" title="送出指令">
+            <span class="send-icon">➤</span>
+          </button>
+        </div>
+        
+        <!-- 輸入建議 -->
+        <div id="input-suggestions" class="input-suggestions hidden">
+          <div class="suggestion-item" data-command="/start">🎭 開始遊戲</div>
+          <div class="suggestion-item" data-command="/hint">💡 獲取提示</div>
+          <div class="suggestion-item" data-command="/status">📊 查看狀態</div>
+          <div class="suggestion-item" data-command="檢查">🔍 檢查物品</div>
+          <div class="suggestion-item" data-command="調查">🕵️ 深入調查</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 側邊欄（可選） -->
+    <aside class="game-sidebar">
+      <!-- 角色資訊 -->
+      <div class="character-panel">
+        <h3>主要角色</h3>
+        <div class="character-list">
+          <div class="character-item" data-character="charles">
+            <div class="character-avatar">👤</div>
+            <div class="character-info">
+              <div class="character-name">Charles</div>
+              <div class="character-status">可疑</div>
+            </div>
+          </div>
+          <div class="character-item" data-character="victoria">
+            <div class="character-avatar">👩</div>
+            <div class="character-info">
+              <div class="character-name">Victoria</div>
+              <div class="character-status">受害者</div>
+            </div>
+          </div>
+          <div class="character-item" data-character="edward">
+            <div class="character-avatar">🧔</div>
+            <div class="character-info">
+              <div class="character-name">Edward</div>
+              <div class="character-status">無辜</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 收集的線索 -->
+      <div class="clues-panel">
+        <h3>收集的線索</h3>
+        <div id="clues-list" class="clues-list">
+          <div class="no-clues">尚未發現線索...</div>
+        </div>
+      </div>
+
+      <!-- 遊戲進度 -->
+      <div class="progress-panel">
+        <h3>調查進度</h3>
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text">
+          <span id="progress-current">0</span> / <span id="progress-total">7</span> 關卡
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 設定面板 -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <div class="settings-content">
+      <h2>遊戲設定</h2>
+      
+      <div class="setting-group">
+        <label class="setting-label">
+          <input type="checkbox" id="sound-toggle" checked>
+          <span class="checkmark"></span>
+          音效
+        </label>
+      </div>
+      
+      <div class="setting-group">
+        <label class="setting-label">
+          <input type="checkbox" id="music-toggle" checked>
+          <span class="checkmark"></span>
+          背景音樂
+        </label>
+      </div>
+      
+      <div class="setting-group">
+        <label class="setting-label">
+          <input type="range" id="volume-slider" min="0" max="100" value="70">
+          音量: <span id="volume-value">70</span>%
+        </label>
+      </div>
+      
+      <div class="setting-group">
+        <label class="setting-label">
+          <select id="difficulty-select">
+            <option value="easy">簡單</option>
+            <option value="normal" selected>普通</option>
+            <option value="hard">困難</option>
+          </select>
+          難度
+        </label>
+      </div>
+      
+      <div class="settings-actions">
+        <button id="reset-game" class="settings-btn danger">重置遊戲</button>
+        <button id="close-settings" class="settings-btn">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成就通知 -->
+  <div id="achievement-notification" class="achievement-notification hidden">
+    <div class="achievement-content">
+      <div class="achievement-icon">🏆</div>
+      <div class="achievement-text">
+        <div class="achievement-title">成就解鎖！</div>
+        <div class="achievement-description"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 確認對話框 -->
+  <div id="confirm-dialog" class="confirm-dialog hidden">
+    <div class="dialog-content">
+      <h3 class="dialog-title">確認操作</h3>
+      <p class="dialog-message"></p>
+      <div class="dialog-actions">
+        <button id="confirm-yes" class="dialog-btn primary">確認</button>
+        <button id="confirm-no" class="dialog-btn">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定按鈕 -->
+  <button id="settings-btn" class="floating-btn settings-btn" title="遊戲設定">
+    <span class="btn-icon">⚙️</span>
+  </button>
+
+  <!-- 全螢幕按鈕 -->
+  <button id="fullscreen-btn" class="floating-btn fullscreen-btn" title="全螢幕模式">
+    <span class="btn-icon">⛶</span>
+  </button>
+
+  <!-- 音效檔案 -->
+  <audio id="thunder-sound" preload="auto">
+    <source src="assets/sounds/thunder.mp3" type="audio/mpeg">
+    <source src="assets/sounds/thunder.ogg" type="audio/ogg">
+  </audio>
+  
+  <audio id="ambient-sound" preload="auto" loop>
+    <source src="assets/sounds/ambient.mp3" type="audio/mpeg">
+    <source src="assets/sounds/ambient.ogg" type="audio/ogg">
+  </audio>
+  
+  <audio id="success-sound" preload="auto">
+    <source src="assets/sounds/success.mp3" type="audio/mpeg">
+  </audio>
+  
+  <audio id="error-sound" preload="auto">
+    <source src="assets/sounds/error.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- JavaScript 檔案 -->
   <script src="app.js"></script>
+  
+  <!-- Service Worker 註冊 -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => console.log('SW registered'))
+          .catch(error => console.log('SW registration failed'));
+      });
+    }
+  </script>
 </body>
 </html>
