@@ -1,0 +1,21 @@
+{
+  "name": "萬聖夜驚變：化裝舞會謎案",
+  "short_name": "萬聖夜驚變",
+  "description": "一款沉浸式萬聖節推理解謎遊戲",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff6b35",
+  "icons": [
+    {
+      "src": "assets/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
