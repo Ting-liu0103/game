@@ -1,307 +1,166 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="萬聖夜驚變：化裝舞會謎案 - 一個充滿懸疑與推理的互動解謎遊戲">
-    <meta name="keywords" content="萬聖節,解謎遊戲,推理,化裝舞會,互動小說">
-    <meta name="author" content="Game Developer">
-    
-    <!-- Open Graph 社交媒體標籤 -->
-    <meta property="og:title" content="萬聖夜驚變：化裝舞會謎案">
-    <meta property="og:description" content="在這個充滿謎團的化裝舞會中，真相隱藏在每個面具之下...">
-    <meta property="og:type" content="website">
-    <meta property="og:locale" content="zh_TW">
-    
     <title>萬聖夜驚變：化裝舞會謎案</title>
     
-    <!-- 外部資源連結 -->
-    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Google Fonts，對應 style.css 中的字體設定 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <!-- 網站圖示 -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    
-    <!-- 預載入重要資源 -->
-    <link rel="preload" href="story.json" as="fetch" crossorigin="anonymous">
+    <!-- 引入樣式表 -->
+    <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body class="game-body">
-    <!-- 無障礙跳轉連結 -->
-    <a href="#main-content" class="skip-link">跳至主要內容</a>
-    
-    <!-- 載入畫面 -->
-    <div class="loading-screen" id="loading-screen" aria-hidden="true">
-        <div class="loading-content">
-            <div class="pumpkin-loader" aria-hidden="true">🎃</div>
-            <h2>萬聖夜驚變</h2>
-            <div class="loading-bar">
-                <div class="loading-progress" id="loading-progress"></div>
+    <!-- 載入畫面 (由 app.js 控制) -->
+    <div id="loading-screen" class="loading">
+        <div class="loading__content">
+            <div class="loading__icon">🎃</div>
+            <h2 class="loading__title">萬聖夜驚變</h2>
+            <div class="loading__bar">
+                <div class="loading__progress"></div>
             </div>
-            <p class="loading-text">正在準備驚悚體驗...</p>
+            <p class="loading__text">正在準備驚悚體驗...</p>
         </div>
     </div>
 
-    <!-- 主遊戲容器 -->
-    <div class="game-container" id="game-container">
-        <!-- 遊戲標題區 -->
-        <header class="game-header" role="banner">
-            <h1 class="game-title">
-                <span class="title-main">🎭 萬聖夜驚變</span>
-                <span class="title-sub">化裝舞會謎案</span>
-            </h1>
-            
-            <!-- 遊戲狀態顯示 -->
-            <div class="game-status" role="status" aria-live="polite">
-                <div class="status-item">
-                    <span class="status-icon" aria-hidden="true">🏠</span>
-                    <span id="current-location">準備開始</span>
+    <!-- 遊戲主容器 -->
+    <div class="game game--hidden">
+        <!-- 頂部標題與狀態區 -->
+        <header class="header">
+            <div class="header__title">
+                <h1 class="header__title-main">萬聖夜驚變</h1>
+                <p class="header__title-sub">化裝舞會謎案</p>
+            </div>
+            <div class="status">
+                <div class="status__item" title="當前位置">
+                    <span class="status__icon">🏠</span>
+                    <span id="current-location">大廳</span>
                 </div>
-                <div class="status-item">
-                    <span class="status-icon" aria-hidden="true">🔍</span>
-                    <span id="clues-count">0/4</span>
-                    <span class="visually-hidden">線索收集進度</span>
+                <div class="status__item" title="已收集線索">
+                    <span class="status__icon">🔍</span>
+                    <span id="clues-count">0</span>
                 </div>
-                <div class="status-item">
-                    <span class="status-icon" aria-hidden="true">💡</span>
+                <div class="status__item" title="剩餘提示">
+                    <span class="status__icon">💡</span>
                     <span id="hints-remaining">3</span>
-                    <span class="visually-hidden">剩餘提示次數</span>
                 </div>
-                <div class="status-item">
-                    <span class="status-icon" aria-hidden="true">🎯</span>
+                <div class="status__item" title="調查分數">
+                    <span class="status__icon">🎯</span>
                     <span id="score-display">0</span>
-                    <span class="visually-hidden">當前分數</span>
                 </div>
             </div>
-            
-            <!-- 進度條 -->
-            <div class="progress-container">
-                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-fill" id="progress-fill"></div>
+            <div class="progress" title="遊戲進度">
+                <div class="progress__bar">
+                    <div id="progress-fill" class="progress__fill" style="width: 0%;"></div>
                 </div>
-                <div class="progress-text">
-                    關卡進度：<span id="progress-current">0</span>/<span id="progress-total">7</span>
+                <div class="progress__text">
+                    <span id="progress-current">0</span> / <span id="progress-total">7</span>
                 </div>
             </div>
         </header>
 
-        <!-- 主遊戲區域 -->
-        <main class="game-main" id="main-content" role="main">
+        <!-- 主遊戲區 (日誌與輸入) -->
+        <main class="main">
             <div class="log-container">
-                <!-- 遊戲日誌 -->
-                <div class="game-log" id="log" role="log" aria-live="polite" aria-label="遊戲對話記錄" tabindex="0">
-                    <div class="welcome-message">
-                        <h2>🎭 歡迎來到萬聖夜驚變</h2>
-                        <p>在這個充滿謎團的化裝舞會中，真相隱藏在每個面具之下...</p>
-                        <p>輸入 <code>/start</code> 開始你的推理之旅</p>
-                    </div>
+                <div id="log" class="log" tabindex="0" aria-live="polite" aria-atomic="true">
+                    <!-- 遊戲訊息將會顯示在此 -->
                 </div>
-                
-                <!-- 輸入區域 -->
-                <div class="input-container">
-                    <div class="input-wrapper">
-                        <label for="input" class="visually-hidden">輸入遊戲指令或對話</label>
-                        <input 
-                            type="text" 
-                            id="input" 
-                            class="game-input" 
-                            placeholder="輸入指令或對話..." 
-                            autocomplete="off"
-                            maxlength="200"
-                            aria-describedby="input-help"
-                        >
-                        <button 
-                            type="button" 
-                            id="send" 
-                            class="send-button" 
-                            aria-label="發送訊息"
-                            title="發送訊息 (Enter)"
-                        >
-                            <span class="send-icon" aria-hidden="true">📤</span>
-                        </button>
-                    </div>
-                    <div id="input-help" class="visually-hidden">
-                        輸入文字指令與遊戲互動，可使用 /hint 獲取提示，/status 查看狀態
-                    </div>
-                    <!-- 輸入建議 -->
-                    <div class="input-suggestions" id="input-suggestions" role="listbox" aria-label="輸入建議"></div>
+            </div>
+            <div class="input">
+                <div class="input__wrapper">
+                    <input type="text" id="input" class="input__field" placeholder="輸入指令或對話...">
+                    <button id="send" class="input__submit" title="送出指令">➤</button>
                 </div>
             </div>
         </main>
 
-        <!-- 側邊欄 -->
-        <aside class="game-sidebar" role="complementary" aria-label="遊戲工具與資訊">
-            <!-- 快速動作按鈕 -->
-            <div class="quick-actions">
-                <button type="button" id="hint-btn" class="quick-btn" aria-describedby="hint-tooltip">
-                    <span class="btn-icon" aria-hidden="true">💡</span>
-                    <span class="btn-text">提示</span>
-                    <div class="tooltip" id="hint-tooltip" role="tooltip">獲取當前關卡提示</div>
-                </button>
-                
-                <button type="button" id="status-btn" class="quick-btn" aria-describedby="status-tooltip">
-                    <span class="btn-icon" aria-hidden="true">📊</span>
-                    <span class="btn-text">狀態</span>
-                    <div class="tooltip" id="status-tooltip" role="tooltip">查看遊戲狀態</div>
-                </button>
-                
-                <button type="button" id="save-btn" class="quick-btn" aria-describedby="save-tooltip">
-                    <span class="btn-icon" aria-hidden="true">💾</span>
-                    <span class="btn-text">保存</span>
-                    <div class="tooltip" id="save-tooltip" role="tooltip">保存遊戲進度</div>
-                </button>
-                
-                <button type="button" id="load-btn" class="quick-btn" aria-describedby="load-tooltip">
-                    <span class="btn-icon" aria-hidden="true">📂</span>
-                    <span class="btn-text">載入</span>
-                    <div class="tooltip" id="load-tooltip" role="tooltip">載入已保存的進度</div>
-                </button>
+        <!-- 側邊欄 (動作與資訊) -->
+        <aside class="sidebar">
+            <div class="actions">
+                <button id="hint-btn" class="btn"><span class="btn__icon">💡</span> <span class="btn__text">獲取提示</span></button>
+                <button id="status-btn" class="btn"><span class="btn__icon">📊</span> <span class="btn__text">查看狀態</span></button>
+                <button id="save-btn" class="btn"><span class="btn__icon">💾</span> <span class="btn__text">儲存進度</span></button>
+                <button id="load-btn" class="btn"><span class="btn__icon">📂</span> <span class="btn__text">載入進度</span></button>
             </div>
-            
-            <!-- 線索收集區 -->
-            <section class="clues-section" aria-labelledby="clues-title">
-                <h3 class="section-title" id="clues-title">🔍 收集的線索</h3>
-                <div class="clues-list" id="clues-list" role="region" aria-live="polite">
-                    <p class="no-clues">尚未發現任何線索...</p>
-                </div>
-            </section>
-            
-            <!-- 成就系統 -->
-            <section class="achievements-section" aria-labelledby="achievements-title">
-                <h3 class="section-title" id="achievements-title">🏆 成就系統</h3>
-                <div class="achievements-list" id="achievements-list" role="region" aria-live="polite">
-                    <p class="no-clues">尚未解鎖任何成就...</p>
-                </div>
-            </section>
+            <div id="clues-section" class="section">
+                <h3 class="section__title">已獲線索</h3>
+                <ul id="clues-list" class="section__list">
+                    <li class="no-items">尚無線索</li>
+                </ul>
+            </div>
+            <div id="achievements-section" class="section">
+                <h3 class="section__title">成就</h3>
+                <ul id="achievements-list" class="section__list">
+                    <li class="no-items">尚無成就</li>
+                </ul>
+            </div>
         </aside>
+
+        <!-- 浮動工具按鈕 -->
+        <div class="utilities">
+            <button id="settings-btn" class="utility-btn" title="遊戲設定">⚙️</button>
+            <button id="help-btn" class="utility-btn" title="幫助">❓</button>
+            <button id="fullscreen-btn" class="utility-btn" title="全螢幕">⛶</button>
+        </div>
     </div>
 
-    <!-- 工具按鈕 -->
-    <div class="utility-buttons" role="toolbar" aria-label="遊戲工具">
-        <button type="button" id="settings-btn" class="utility-btn" aria-label="遊戲設定" title="設定">
-            <span aria-hidden="true">⚙️</span>
-        </button>
-        
-        <button type="button" id="fullscreen-btn" class="utility-btn" aria-label="全螢幕模式" title="全螢幕">
-            <span aria-hidden="true">🔳</span>
-        </button>
-        
-        <button type="button" id="help-btn" class="utility-btn" aria-label="遊戲說明" title="說明">
-            <span aria-hidden="true">❓</span>
-        </button>
-    </div>
-
-    <!-- 設定面板 -->
-    <div class="settings-panel" id="settings-panel" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
-        <div class="settings-content">
-            <header class="settings-header">
-                <h3 id="settings-title">⚙️ 遊戲設定</h3>
-                <button type="button" id="close-settings" class="close-btn" aria-label="關閉設定">
-                    <span aria-hidden="true">✕</span>
-                </button>
+    <!-- 設定面板 (Modal) -->
+    <div id="settings-panel" class="modal">
+        <div class="modal__content" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+            <header class="modal__header">
+                <h2 id="modal-title" class="modal__title">遊戲設定</h2>
+                <button id="close-settings" class="modal__close" title="關閉設定">&times;</button>
             </header>
-            
-            <div class="settings-body">
-                <!-- 音效設定 -->
-                <div class="setting-group">
-                    <h4>🔊 音效設定</h4>
-                    
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <input type="checkbox" id="sound-toggle" checked aria-describedby="sound-desc">
-                            音效
+            <div class="modal__body">
+                <div class="settings-group">
+                    <h3 class="settings-group__title">音效設定</h3>
+                    <div class="setting">
+                        <label for="sound-toggle" class="setting__label">
+                            <input type="checkbox" id="sound-toggle" class="setting__checkbox" checked>
+                            <span>遊戲音效</span>
                         </label>
-                        <div id="sound-desc" class="visually-hidden">開啟或關閉遊戲音效</div>
                     </div>
-                    
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <input type="checkbox" id="music-toggle" checked aria-describedby="music-desc">
-                            背景音樂
+                    <div class="setting">
+                        <label for="music-toggle" class="setting__label">
+                            <input type="checkbox" id="music-toggle" class="setting__checkbox" checked>
+                            <span>背景音樂</span>
                         </label>
-                        <div id="music-desc" class="visually-hidden">開啟或關閉背景音樂</div>
                     </div>
-                    
-                    <div class="setting-item">
-                        <label for="volume-slider">音量: <span id="volume-value">70</span>%</label>
-                        <input 
-                            type="range" 
-                            id="volume-slider" 
-                            class="volume-slider" 
-                            min="0" 
-                            max="100" 
-                            value="70"
-                            aria-describedby="volume-desc"
-                        >
-                        <div id="volume-desc" class="visually-hidden">調整遊戲音量大小</div>
+                    <div class="setting">
+                        <label for="volume-slider">音量: <span id="volume-value">70</span></label>
+                        <input type="range" id="volume-slider" class="setting__slider" min="0" max="100" value="70">
                     </div>
                 </div>
-                
-                <!-- 遊戲設定 -->
-                <div class="setting-group">
-                    <h4>🎮 遊戲設定</h4>
-                    
-                    <div class="setting-item">
+                <div class="settings-group">
+                    <h3 class="settings-group__title">遊戲選項</h3>
+                    <div class="setting">
                         <label for="difficulty-select">難度</label>
-                        <select id="difficulty-select" class="difficulty-select" aria-describedby="difficulty-desc">
+                        <select id="difficulty-select" class="setting__select">
                             <option value="easy">簡單</option>
                             <option value="normal" selected>普通</option>
                             <option value="hard">困難</option>
                         </select>
-                        <div id="difficulty-desc" class="visually-hidden">選擇遊戲難度等級</div>
                     </div>
-                    
-                    <div class="setting-item">
-                        <button type="button" id="reset-game" class="reset-btn" aria-describedby="reset-desc">
-                            重置遊戲
-                        </button>
-                        <div id="reset-desc" class="visually-hidden">清除所有進度並重新開始遊戲</div>
+                    <div class="setting">
+                        <button id="reset-game" class="btn btn--danger">重置遊戲</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- 音訊元素 (隱藏) -->
+    <audio id="thunder-sound" src="https://www.soundjay.com/nature/sounds/thunder.mp3" preload="auto"></audio>
+    <audio id="ambient-sound" src="https://www.soundjay.com/ambient/sounds/ambience.mp3" preload="auto" loop></audio>
+    <audio id="success-sound" src="https://www.soundjay.com/buttons/sounds/success.mp3" preload="auto"></audio>
+    <audio id="error-sound" src="https://www.soundjay.com/buttons/sounds/error.mp3" preload="auto"></audio>
+    
+    <!-- 引入核心腳本 (必須放在 body 結尾) -->
+    <script src="app.js"></script>
 
-    <!-- 音效元素 -->
-    <audio id="thunder-sound" preload="auto" aria-hidden="true">
-        <source src="sounds/thunder.mp3" type="audio/mpeg">
-        <source src="sounds/thunder.ogg" type="audio/ogg">
-    </audio>
-    
-    <audio id="ambient-sound" preload="auto" loop aria-hidden="true">
-        <source src="sounds/ambient.mp3" type="audio/mpeg">
-        <source src="sounds/ambient.ogg" type="audio/ogg">
-    </audio>
-    
-    <audio id="success-sound" preload="auto" aria-hidden="true">
-        <source src="sounds/success.mp3" type="audio/mpeg">
-        <source src="sounds/success.ogg" type="audio/ogg">
-    </audio>
-    
-    <audio id="error-sound" preload="auto" aria-hidden="true">
-        <source src="sounds/error.mp3" type="audio/mpeg">
-        <source src="sounds/error.ogg" type="audio/ogg">
-    </audio>
-
-    <!-- JavaScript 載入 -->
-    <script src="app.js" defer></script>
-    
-    <!-- 結構化資料 -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Game",
-        "name": "萬聖夜驚變：化裝舞會謎案",
-        "description": "一個充滿懸疑與推理的互動解謎遊戲",
-        "genre": "解謎遊戲",
-        "gamePlatform": "網頁瀏覽器",
-        "operatingSystem": "任何支援現代瀏覽器的系統",
-        "applicationCategory": "Game",
-        "inLanguage": "zh-TW"
-    }
-    </script>
 </body>
 </html>
